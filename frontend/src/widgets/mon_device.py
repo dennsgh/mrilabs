@@ -107,13 +107,11 @@ class DeviceMonitorWidget(QWidget):
                     self, "Success", "The monitoring logs has been cleared."
                 )
             except Exception as e:
-                print(f"Error clearing monitoring logs: {e}")
-                QMessageBox.critical(self, "Error", "Could not clear the archive.")
+                QMessageBox.critical(self, "Error", f"Could not clear the archive. {e}")
 
     def log_event(self, description: str):
         timestamp = datetime.now().isoformat()
         event = {"timestamp": timestamp, "description": description}
-        print(f"[Monitor] {description} at {timestamp}.")
         if not self.monitor_logs.exists():
             with open(self.monitor_logs, "w") as file:
                 json.dump([event], file, indent=4)

@@ -217,7 +217,6 @@ class SchedulerWidget(QWidget):
                     self, "Success", "The archive has been cleared."
                 )
             except Exception as e:
-                print(f"Error clearing finished jobs: {e}")
                 QMessageBox.critical(self, "Error", "Could not clear the archive.")
 
     def open_job_config_popup(self):
@@ -353,7 +352,6 @@ class JobConfigPopup(QDialog):
         else:
             self.taskSelect.addItem(self.NO_TASK_STRING)
             self.taskSelect.setCurrentIndex(0)
-        print(f"TASK {self.taskSelect.currentText()}")
         self.updateUI()
 
     def updateUI(self):

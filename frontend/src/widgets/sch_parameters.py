@@ -45,7 +45,6 @@ class ParameterConfiguration(QWidget):
             device (str): The name of the device for which the UI should be updated.
             task_name (str): The name of the task for which the UI should be updated.
         """
-        print(f"Got{device}-{task_name}")
         cache_key: Tuple[str, str] = (device, task_name)
         if cache_key not in self.widget_cache:
             task_func: Optional[Callable] = self.task_dictionary.get(device, {}).get(

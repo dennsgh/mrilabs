@@ -102,11 +102,11 @@ def is_in_enum(name: str, task_enum: Enum) -> Optional[Any]:
     Returns:
         True if part of enum.
     """
-    name = name.lower()
+    name = name.upper()
     for enum_member in task_enum:
         if (
-            str(enum_member.name).lower() == name
-            or str(enum_member.value).lower() == name
+            str(enum_member.name).upper() == name
+            or str(enum_member.value).upper() == name
         ):
             return True
     return False
@@ -123,11 +123,11 @@ def get_task_enum_value(name: str, task_enum: Enum) -> Optional[Any]:
     Returns:
         The Enum value if a match is found, None otherwise.
     """
-    name = name.lower()
+    name = name.upper()
     for enum_member in task_enum:
         if (
-            str(enum_member.name).lower() == name
-            or str(enum_member.value).lower() == name
+            str(enum_member.name).upper() == name
+            or str(enum_member.value).upper() == name
         ):
             return enum_member.value
     return None
@@ -144,11 +144,11 @@ def get_task_enum_name(name: str, task_enum: Enum) -> Optional[str]:
     Returns:
         The Enum name if a match is found, None otherwise.
     """
-    name = name.lower()
+    name = name.upper()
     for enum_member in task_enum:
         if (
-            str(enum_member.name).lower() == name
-            or str(enum_member.value).lower() == name
+            str(enum_member.name).upper() == name
+            or str(enum_member.value).upper() == name
         ):
             return enum_member.name
     return None
@@ -169,15 +169,15 @@ def get_function_to_validate(
         The matched function if found, None otherwise.
     """
     # Try to get the function directly by name
-    name = name.lower()
-    function_to_validate = task_functions.get(name.lower())
+    name = name.upper()
+    function_to_validate = task_functions.get(name.upper())
 
     # If not found and an Enum is provided, try matching against Enum names or values
     if not function_to_validate and task_enum:
         for enum_member in task_enum:
             if (
-                str(enum_member.name).lower() == name
-                or str(enum_member.value).lower() == name
+                str(enum_member.name).upper() == name
+                or str(enum_member.value).upper() == name
             ):
                 return task_functions.get(enum_member.value)
 
@@ -191,7 +191,7 @@ def validate_configuration(
     for index, step in enumerate(
         config.get("experiment", {}).get("steps", []), start=1
     ):
-        name = str(step.get("task")).lower()
+        name = str(step.get("task")).upper()
         function_to_validate = get_function_to_validate(name, task_functions, task_enum)
 
         if function_to_validate:
@@ -222,7 +222,7 @@ def validate_configuration(
 def validate_task(
     name: str, task_functions: Dict[str, Callable], task_enum: Enum = None
 ) -> List[Tuple[str, bool, str]]:
-    name = str(name).lower()
+    name = str(name).upper()
 
     # Use the refactored function to get the function to validate
     function_to_validate = get_function_to_validate(name, task_functions, task_enum)

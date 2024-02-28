@@ -141,12 +141,12 @@ class ExperimentConfiguration(QWidget):
             QMessageBox.warning(
                 self, "Configuration Validation Issues", "".join(messages)
             )
-            descriptionText = "Configuration Validation Issues: " + "\n".join(messages)
+            descriptionText = "Configuration Validation Issues: \n" + "".join(messages)
         elif highest_error_level == ErrorLevel.INVALID_YAML:
             QMessageBox.critical(
                 self, "Configuration Validation Failed", "".join(messages)
             )
-            descriptionText = "Configuration Validation Failed: " + "\n".join(messages)
+            descriptionText = "Configuration Validation Failed: \n" + "".join(messages)
         return descriptionText
 
     def load_and_validate(self, config_path: str) -> None:
@@ -189,11 +189,15 @@ class ExperimentConfiguration(QWidget):
         self.tabWidget.clear()
         steps = self.config.get("experiment", {}).get("steps", [])
         if steps:
-            for step in steps:
-                self.createTaskTab(step)
+            for index, step in enumerate(steps, start=1):
+                valid, err = self.createTaskTab(step)
+                if not valid:
+                    QMessageBox.warning(
+                        self, "Warning", f"At step {index} [{step}]:{err}"
+                    )
         self.layout().update()
 
-    def createTaskTab(self, task: dict) -> None:
+    def createTaskTab(self, task: dict) -> bool:
         """
         Generates a tab with a form layout for each step, allowing users to
         interact with the step parameters.
@@ -211,46 +215,56 @@ class ExperimentConfiguration(QWidget):
         formLayout = QFormLayout()
 
         formWidget.setLayout(formLayout)
-        task_function = self.get_function(task.get("task"))
-        if not task_function:
-            print(f"No function found for task: {task}")
-            return
+        try:
+            task_function = self.get_function(task.get("task"))
+            if not task_function:
+                return (
+                    False,
+                    "Function not Found, task name is not associated with a function.",
+                )
 
-        # Inspect the function signature to get parameter information
-        sig = inspect.signature(task_function)
-        param_types = {name: param.annotation for name, param in sig.parameters.items()}
-        param_constraints = getattr(task_function, "param_constraints", {})
-        print(param_constraints)
-        # Initialize a dictionary to store the task parameters from the configuration
-        task_parameters = task.get("parameters", {})
+            # Inspect the function signature to get parameter information
+            sig = inspect.signature(task_function)
+            param_types = {
+                name: param.annotation for name, param in sig.parameters.items()
+            }
+            param_constraints = getattr(task_function, "param_constraints", {})
+            # Initialize a dictionary to store the task parameters from the configuration
+            task_parameters = task.get("parameters", {})
 
-        for param_name, param in sig.parameters.items():
-            value = task_parameters.get(param_name, None)
-            expected_type = param_types.get(param_name, str)
+            # trunk-ignore(ruff/B007)
+            for param_name, param in sig.parameters.items():
+                value = task_parameters.get(param_name, None)
+                expected_type = param_types.get(param_name, str)
 
-            # Now, extract specific constraints for the current parameter
-            specific_constraints = param_constraints.get(param_name, None)
+                # Now, extract specific constraints for the current parameter
+                specific_constraints = param_constraints.get(param_name, None)
 
-            widget = UIComponentFactory.create_widget(
-                param_name, value, expected_type, specific_constraints
+                widget = UIComponentFactory.create_widget(
+                    param_name, value, expected_type, specific_constraints
+                )
+                widget.setSizePolicy(
+                    QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
+                )
+                # Create labels for parameter name and type hinting (optional)
+                paramNameLabel = QLabel(f"{param_name} :{expected_type.__name__}")
+                # Add labels and widget to the form layout
+                formLayout.addRow(paramNameLabel, widget)
+
+            scrollArea.setWidget(formWidget)
+            self.tabWidget.addTab(
+                tab, get_task_enum_value(task.get("task"), self.task_enum)
             )
-            widget.setSizePolicy(
-                QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
+            layout.addStretch(1)
+            scrollArea.setSizePolicy(
+                QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
             )
-            # Create labels for parameter name and type hinting (optional)
-            paramNameLabel = QLabel(f"{param_name} :{expected_type.__name__}")
-            # Add labels and widget to the form layout
-            formLayout.addRow(paramNameLabel, widget)
-
-        scrollArea.setWidget(formWidget)
-        self.tabWidget.addTab(
-            tab, get_task_enum_value(task.get("task"), self.task_enum)
-        )
-        layout.addStretch(1)
-        scrollArea.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
-        )
-        tab.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+            tab.setSizePolicy(
+                QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+            )
+            return True, ""
+        except Exception as e:
+            return False, f"{e}"
 
     def getUserData(self) -> dict:
         """
@@ -384,7 +398,7 @@ class ExperimentConfiguration(QWidget):
         for objective in objectives:
             summary_lines.append(f"  - {objective}")
 
-        return "\n".join(summary_lines)
+        return "".join(summary_lines)
 
     def saveConfiguration(self, config_path: str) -> bool:
         """
