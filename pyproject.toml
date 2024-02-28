@@ -19,6 +19,7 @@ apscheduler = "^3.10.4"
 pyqtgraph = "^0.13.3"
 pyyaml = "^6.0.1"
 filelock = "^3.13.1"
+python-dotenv = {extras = ["cli"], version = "^1.0.1"}
 
 
 [build-system]

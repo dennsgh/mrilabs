@@ -101,52 +101,43 @@ class ExperimentConfiguration(QWidget):
         validation_results = validate_configuration(
             data, self.task_functions, self.task_enum
         )
-        messages = (
-            []
-        )  # This will accumulate our error messages in a more compact format
-
+        message_dict = {"errors": [], "warnings": [], "infos": []}
         for task_name, is_valid, message, error_level in validation_results:
             if not is_valid:
                 overall_valid = False
-                # Update the highest error level based on the current error
                 if error_level.value > highest_error_level.value:
                     highest_error_level = error_level
-            # Append the task and its message in a compact manner
-            messages.append(f"{task_name}: {message}")
+                message_dict["errors"].append(f"{task_name}: {message}")
+            else:
+                # Check if message contains more than just "Validation issues: "
+                if message.strip() != "Validation issues:":
+                    message_dict["infos"].append(f"{task_name}: {message}")
 
-        # Join messages with a separator that puts each on a new line but in a more compact form
-        compact_message = "\n".join(messages)
-
-        return overall_valid, compact_message, highest_error_level
+        return overall_valid, message_dict, highest_error_level
 
     def error_handling(
-        self, overall_valid: bool, messages: list[str], highest_error_level: ErrorLevel
+        self, overall_valid: bool, message_dict: dict, highest_error_level: ErrorLevel
     ) -> str:
-        """
-        Handles display of error messages and configuration summaries based on validation results.
+        descriptionText = "Configuration Summary:\n"
 
-        Displays appropriate messages based on the overall validity and error level.
+        if message_dict["errors"]:
+            descriptionText += "\nErrors:\n" + "\n".join(message_dict["errors"])
+        if message_dict["warnings"]:
+            descriptionText += "\nWarnings:\n" + "\n".join(message_dict["warnings"])
 
-        Args:aining either a summary of the configuration or an error message.
-        """
+        infos_with_content = [
+            info
+            for info in message_dict["infos"]
+            if "Validation issues:" not in info or len(info.split(":")) > 2
+        ]
+        if infos_with_content:
+            descriptionText += "\nInformation:\n" + "\n".join(infos_with_content)
+
         if overall_valid or highest_error_level == ErrorLevel.INFO:
-            descriptionText = self.generate_experiment_summary(self.config)
-        else:
             descriptionText = (
-                "OK"  # Default message, will be overwritten by error cases below
+                self.generate_experiment_summary(self.config) + "\n" + descriptionText
             )
 
-        # Handle different levels of error messages
-        if highest_error_level == ErrorLevel.BAD_CONFIG:
-            QMessageBox.warning(
-                self, "Configuration Validation Issues", "".join(messages)
-            )
-            descriptionText = "Configuration Validation Issues: \n" + "".join(messages)
-        elif highest_error_level == ErrorLevel.INVALID_YAML:
-            QMessageBox.critical(
-                self, "Configuration Validation Failed", "".join(messages)
-            )
-            descriptionText = "Configuration Validation Failed: \n" + "".join(messages)
         return descriptionText
 
     def load_and_validate(self, config_path: str) -> None:
@@ -162,16 +153,14 @@ class ExperimentConfiguration(QWidget):
             self.config = yaml.safe_load(file)
         if not self.config:
             QMessageBox.warning(self, "Error", "No configuration loaded.")
-            return
+            return False, "No configuration loaded.", {}
 
-        overall_valid, messages, highest_error_level = self.validate(self.config)
-        # Initialize description text with a default message or an experiment summary
-        # Generate a summary if the config is valid or if only INFO level messages are present
+        overall_valid, message_dict, highest_error_level = self.validate(self.config)
         descriptionText = self.error_handling(
-            overall_valid, messages, highest_error_level
+            overall_valid, message_dict, highest_error_level
         )
 
-        return overall_valid, "\n".join(messages), descriptionText
+        return overall_valid, message_dict, descriptionText
 
     def displayExperimentDetails(self) -> None:
         """
@@ -385,28 +374,21 @@ class ExperimentConfiguration(QWidget):
             return text  # Return as string by default
 
     def generate_experiment_summary(self, data: dict):
-        """
-        Generates a summary of the experiment based on the YAML configuration.
-        This is a placeholder function; you should replace the logic with actual
-        processing of your specific YAML structure to extract and format the summary.
-        """
-        # Pseudocode for generating a summary - replace with actual implementation
-        experiment_name = data.get("experiment_name", "Unnamed Experiment")
-        parameters = data.get("parameters", {})
-        objectives = data.get("objectives", [])
+        if not data or "experiment" not in data:
+            return "No experiment configuration loaded."
 
-        summary_lines = [
-            f"Experiment: {experiment_name}",
-            "Parameters:",
-        ]
-        for param, value in parameters.items():
-            summary_lines.append(f"  - {param}: {value}")
+        experiment_data = data["experiment"]
+        experiment_name = experiment_data.get("name", "Unnamed Experiment")
+        steps = experiment_data.get("steps", [])
 
-        summary_lines.append("Objectives:")
-        for objective in objectives:
-            summary_lines.append(f"  - {objective}")
+        summary_lines = [f"Experiment: {experiment_name}\n\nSteps Summary:"]
 
-        return "".join(summary_lines)
+        for i, step in enumerate(steps, 1):
+            task_name = step.get("task", "Unknown Task")
+            description = step.get("description", "No description provided.")
+            summary_lines.append(f"  Step {i}: {task_name} - {description}")
+
+        return "\n".join(summary_lines)
 
     def saveConfiguration(self, config_path: str) -> bool:
         """

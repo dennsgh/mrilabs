@@ -43,52 +43,58 @@ def is_type_compatible(expected_type, value) -> bool:
     return False
 
 
+def get_default_value(param_name: str, expected_type: type) -> Any:
+    # Example default value logic based on type or name
+    default_values = {
+        "frequency": 1.0,  # Default frequency in Hz
+        "amplitude": 0.5,  # Default amplitude in V
+    }
+    if expected_type is int:
+        return 0
+    elif expected_type is float:
+        return 0.0
+    elif expected_type is bool:
+        return False
+    elif expected_type is str:
+        return ""
+    elif expected_type is list:
+        return []
+    elif expected_type is dict:
+        return {}
+    return default_values.get(param_name, None)
+
+
 def validate_task_parameters(
     task_function, parameters: Dict[str, Any]
-) -> Tuple[bool, str]:
+) -> Tuple[bool, List[str], List[str]]:
     sig = inspect.signature(task_function)
-    missing_params = []
-    extra_params = []
-    type_mismatches = []
+    errors = []
+    warnings = []
 
     for name, param in sig.parameters.items():
         expected_type = param.annotation
         provided_value = parameters.get(name, inspect.Parameter.empty)
 
-        if (
-            provided_value is inspect.Parameter.empty
-            and param.default is inspect.Parameter.empty
-        ):
-            missing_params.append(name)
+        # Check for missing parameters
+        if provided_value is inspect.Parameter.empty:
+            if param.default is inspect.Parameter.empty:
+                errors.append(f"Missing required param: {name}.")
+            else:
+                warnings.append(f"Missing optional param: {name}, using default value.")
         elif (
             not is_type_compatible(expected_type, provided_value)
             and expected_type is not inspect.Parameter.empty
         ):
-            type_mismatches.append(
-                (name, type(provided_value).__name__, expected_type.__name__)
+            errors.append(
+                f"Type mismatch: {name} (got {type(provided_value).__name__}, expected {expected_type.__name__})"
             )
 
     for name in parameters:
         if name not in sig.parameters:
-            extra_params.append(name)
+            errors.append(f"Extra param provided: {name}.")
 
-    messages = []
-    if missing_params:
-        messages.append(f"Missing required params: {', '.join(missing_params)}.")
-    if extra_params:
-        messages.append(f"Extra params provided: {', '.join(extra_params)}.")
-    if type_mismatches:
-        mismatch_details = ", ".join(
-            [
-                f"{name} (got {got}, expected {expected})"
-                for name, got, expected in type_mismatches
-            ]
-        )
-        messages.append(f"Type mismatches: {mismatch_details}.")
-
-    return False if messages else True, (
-        " ".join(messages) if messages else "All parameters are valid."
-    )
+    is_valid = not errors
+    return is_valid, errors, warnings
 
 
 def is_in_enum(name: str, task_enum: Enum) -> Optional[Any]:
@@ -186,26 +192,21 @@ def get_function_to_validate(
 
 def validate_configuration(
     config: Dict[str, Any], task_functions: Dict[str, Callable], task_enum: Enum = None
-) -> List[Tuple[str, bool, str]]:
+) -> List[Tuple[str, bool, str, ErrorLevel]]:
     results = []
     for index, step in enumerate(
         config.get("experiment", {}).get("steps", []), start=1
     ):
-        name = str(step.get("task")).upper()
+        name = step.get("task").upper()
         function_to_validate = get_function_to_validate(name, task_functions, task_enum)
 
         if function_to_validate:
-            is_valid, message = validate_task_parameters(
+            is_valid, errors, warnings = validate_task_parameters(
                 function_to_validate, step.get("parameters", {})
             )
-            results.append(
-                (
-                    f"Step {index}: {name}",
-                    is_valid,
-                    message,
-                    ErrorLevel.INFO if is_valid else ErrorLevel.BAD_CONFIG,
-                )
-            )
+            error_level = ErrorLevel.INFO if is_valid else ErrorLevel.BAD_CONFIG
+            message = "Validation issues: " + "; ".join(errors + warnings)
+            results.append((f"Step {index}: {name}", is_valid, message, error_level))
         else:
             results.append(
                 (
@@ -215,7 +216,9 @@ def validate_configuration(
                     ErrorLevel.BAD_CONFIG,
                 )
             )
-    print(results)
+
+    for result in results:
+        print(result)
     return results
 
 

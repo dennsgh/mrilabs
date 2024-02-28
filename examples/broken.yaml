@@ -1,0 +1,22 @@
+asdgasdasd
+    - task: DG4202_TOGGLE
+      description: turn ch 1 off
+      duration: 0
+      parameters:
+        channel: 1
+        output: false
+    - task: DG4202_SET_SWEEP
+      description: sweep
+      duration: 5
+      parameters:
+        channel: 2
+        time: 5
+        fstart: 10
+        fstop: 100
+        send_on: true
+    - task: DG4202_TOGGLE
+      description: turn ch2 off
+      duration: 5
+      parameters:
+        channel: 2
+        output: false

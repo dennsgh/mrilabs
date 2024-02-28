@@ -54,7 +54,7 @@ class UIComponentFactory:
         """
         Maps a parameter type to a PyQt widget, considering the constraints.
         """
-        if param_type in [int, float, str] and isinstance(constraints, list):
+        if param_type in [int, float, str, bool] and isinstance(constraints, list):
             widget = QComboBox()
             for value in constraints:
                 widget.addItem(str(value), value)

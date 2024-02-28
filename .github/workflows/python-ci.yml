@@ -15,14 +15,12 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
-        python-version: '3.11' 
+        python-version: "3.11.5"
 
     - name: Install dependencies
       run: |
         pip install poetry && poetry install --no-root
         poetry run python ./etc/env.py
-
     - name: Test with pytest
       run: |
         poetry run python -m pytest . -k "not hardware"
-        
