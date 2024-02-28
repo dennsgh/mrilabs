@@ -12,6 +12,26 @@ from PyQt6.QtWidgets import (
 
 
 class UIComponentFactory:
+    @staticmethod
+    def getDefaultValue(param_name: str, expected_type: type) -> Any:
+        # Example default value logic based on type or name
+        default_values = {
+            "frequency": 1.0,  # Default frequency in Hz
+            "amplitude": 0.5,  # Default amplitude in V
+        }
+        if expected_type is int:
+            return 0
+        elif expected_type is float:
+            return 0.0
+        elif expected_type is bool:
+            return False
+        elif expected_type is str:
+            return ""
+        elif expected_type is list:
+            return []
+        elif expected_type is dict:
+            return {}
+        return default_values.get(param_name, None)
 
     @staticmethod
     def map_type_name_to_type(type_name: str):
@@ -34,7 +54,6 @@ class UIComponentFactory:
         """
         Maps a parameter type to a PyQt widget, considering the constraints.
         """
-        print(f"{param_type} - {constraints}")
         if param_type in [int, float, str] and isinstance(constraints, list):
             widget = QComboBox()
             for value in constraints:
@@ -77,7 +96,7 @@ class UIComponentFactory:
 
     @staticmethod
     def create_widget(
-        param_name: str, value: Any, expected_type: type, constraints: Any
+        parameter_name: str, value: Any, expected_type: type, constraints: Any
     ) -> QWidget:
         """
         Creates a widget based on the parameter's expected type and the specific constraints.
@@ -106,7 +125,7 @@ class UIComponentFactory:
         elif isinstance(widget, QLineEdit):
             widget.setText(str(value) if value is not None else str(default_value))
         widget.setProperty("expected_type", expected_type.__name__)
-        widget.setProperty("param_name", param_name)
+        widget.setProperty("parameter_name", parameter_name)
 
         return widget
 

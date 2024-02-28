@@ -71,14 +71,18 @@ class ParameterConfiguration(QWidget):
         spec: List[QWidget] = []
         sig = inspect.signature(task_function)
         param_types = {name: param.annotation for name, param in sig.parameters.items()}
-        param_constraints = getattr(task_function, "param_constraints", {})
+        # Get metadata from functions
+        parameter_annotations = getattr(task_function, "parameter_annotations", {})
+        parameter_constraints = getattr(task_function, "parameter_constraints", {})
         for param, expected_type in param_types.items():
-            constraints = param_constraints.get(param)
+            constraints = parameter_constraints.get(param)
+            param_annotation = parameter_annotations.get(param, "")
+
             widget_spec = UIComponentFactory.create_widget(
                 param, None, expected_type, constraints
             )
             # Include parameter name and type in the spec
-            spec.append((param, widget_spec, expected_type))
+            spec.append((param, widget_spec, expected_type, param_annotation))
         return spec
 
     def generateUI(self, spec: List[QWidget]) -> QWidget:
@@ -93,16 +97,19 @@ class ParameterConfiguration(QWidget):
         """
         container = QWidget()
         layout = QVBoxLayout(container)
-        for param_name, widget, expected_type in spec:
+        for parameter_name, widget, expected_type, param_annotation in spec:
             # Create a horizontal layout for each parameter
             param_layout = QHBoxLayout()
 
             # Create a label for each parameter that displays its name and type
             label_text = (
-                f"{param_name}: {expected_type.__name__}"
+                f"{parameter_name}: {expected_type.__name__}"
                 if expected_type
-                else param_name
+                else parameter_name
             )
+            # Append annotation to the label text if it exists
+            if param_annotation:
+                label_text += f" ({param_annotation})"
             param_label = QLabel(label_text)
 
             # Add label and widget to the horizontal layout
@@ -128,12 +135,12 @@ class ParameterConfiguration(QWidget):
         current_widget = self.stacked_widget.currentWidget()
         if current_widget:
             for widget in current_widget.findChildren(QWidget):
-                param_name = widget.property("param_name")
-                if param_name:
+                parameter_name = widget.property("parameter_name")
+                if parameter_name:
                     expected_type = UIComponentFactory.map_type_name_to_type(
                         widget.property("expected_type")
                     )
-                    parameters[param_name] = UIComponentFactory.extract_value(
+                    parameters[parameter_name] = UIComponentFactory.extract_value(
                         widget, expected_type
                     )
         return parameters

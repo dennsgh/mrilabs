@@ -228,26 +228,34 @@ class ExperimentConfiguration(QWidget):
             param_types = {
                 name: param.annotation for name, param in sig.parameters.items()
             }
-            param_constraints = getattr(task_function, "param_constraints", {})
+            parameter_annotations = getattr(task_function, "parameter_annotations", {})
+            parameter_constraints = getattr(task_function, "parameter_constraints", {})
             # Initialize a dictionary to store the task parameters from the configuration
             task_parameters = task.get("parameters", {})
 
             # trunk-ignore(ruff/B007)
-            for param_name, param in sig.parameters.items():
-                value = task_parameters.get(param_name, None)
-                expected_type = param_types.get(param_name, str)
-
+            for parameter_name, param in sig.parameters.items():
+                value = task_parameters.get(parameter_name, None)
+                expected_type = param_types.get(parameter_name, str)
+                # The units are embedded on the annotations for each parameter where applicable (if exist)
+                param_unit = (
+                    f"({parameter_annotations.get(parameter_name)})"
+                    if parameter_annotations.get(parameter_name)
+                    else ""
+                )
                 # Now, extract specific constraints for the current parameter
-                specific_constraints = param_constraints.get(param_name, None)
+                specific_constraints = parameter_constraints.get(parameter_name, None)
 
                 widget = UIComponentFactory.create_widget(
-                    param_name, value, expected_type, specific_constraints
+                    parameter_name, value, expected_type, specific_constraints
                 )
                 widget.setSizePolicy(
                     QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
                 )
                 # Create labels for parameter name and type hinting (optional)
-                paramNameLabel = QLabel(f"{param_name} :{expected_type.__name__}")
+                paramNameLabel = QLabel(
+                    f"{parameter_name} :{expected_type.__name__} {param_unit}"
+                )
                 # Add labels and widget to the form layout
                 formLayout.addRow(paramNameLabel, widget)
 
@@ -303,7 +311,7 @@ class ExperimentConfiguration(QWidget):
                 row_widget = form_layout.itemAt(i, QFormLayout.ItemRole.LabelRole)
                 if row_widget:
                     param_label_widget = row_widget.widget()
-                    param_name = param_label_widget.text().split(" :")[
+                    parameter_name = param_label_widget.text().split(" :")[
                         0
                     ]  # Extract parameter name before the colon
 
@@ -314,7 +322,7 @@ class ExperimentConfiguration(QWidget):
                     if param_value is None:  # None indicates it wasn't recognized.
                         continue
 
-                    updated_parameters[param_name] = param_value
+                    updated_parameters[parameter_name] = param_value
 
             updated_step["parameters"] = updated_parameters
             updated_config["experiment"]["steps"].append(updated_step)

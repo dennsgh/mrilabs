@@ -1,6 +1,6 @@
 from enum import Enum
 
-from features.task_decorator import parameter_constraints
+from features.task_decorator import parameter_annotations, parameter_constraints
 from header import DeviceName
 from pages import factory
 
@@ -18,31 +18,26 @@ class TaskName(Enum):
     DG4202_SET_SWEEP = "Set Sweep Parameters"
     EDUX1002A_AUTO = "Press Auto"
 
-    @staticmethod
-    def get_name_enum(task_name_str):
-        # First, try looking up by name
-        try:
-            return TaskName[task_name_str]
-        except KeyError:
-            pass
-        # Next, try looking up by value
-        for _, member in TaskName.__members__.items():
-            if member.value == task_name_str:
-                return member
-        return None
 
-
-@parameter_constraints(channel=(1, 2))
-def task_on_off_dg4202(channel: int, status: bool) -> bool:
-    factory.dg4202_manager.device.output_on_off(channel=channel, status=status)
+@parameter_constraints(channel=(1, 2), output=["ON", "OFF"])
+def task_on_off_dg4202(channel: int, output: str) -> bool:
+    factory.dg4202_manager.device.output_on_off(
+        channel=channel, status=True if output == "ON" else False
+    )
     return True
 
 
+@parameter_annotations(
+    frequency="Hz",
+    offset="V",
+    amplitude="V",
+)
 @parameter_constraints(
     frequency=(0.0, DG4202.FREQ_LIMIT),
     channel=[1, 2],  # decorating with list means forced options
     waveform_type=DG4202.available_waveforms(),
     offset=(0.0, 5.0),
+    amplitude=(0.0, 5.0),
 )
 def task_set_waveform_parameters(
     channel: int,
@@ -65,12 +60,20 @@ def task_set_waveform_parameters(
     return True
 
 
+@parameter_annotations(
+    fstart="Hz",
+    fstop="Hz",
+    time="s",
+    rtime="ms",
+    htime_start="ms",
+    htime_stop="ms",
+)
 @parameter_constraints(
     channel=[1, 2],
     fstart=(0.0, DG4202.FREQ_LIMIT),
     fstop=(0.0, DG4202.FREQ_LIMIT),
     time=(0.0, float("inf")),
-    rime=(0.0, float("inf")),
+    rtime=(0.0, float("inf")),
     htime_start=(0.0, float("inf")),
     htime_stop=(0.0, float("inf")),
 )
