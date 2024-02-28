@@ -13,27 +13,6 @@ from PyQt6.QtWidgets import (
 
 class UIComponentFactory:
     @staticmethod
-    def getDefaultValue(param_name: str, expected_type: type) -> Any:
-        # Example default value logic based on type or name
-        default_values = {
-            "frequency": 1.0,  # Default frequency in Hz
-            "amplitude": 0.5,  # Default amplitude in V
-        }
-        if expected_type is int:
-            return 0
-        elif expected_type is float:
-            return 0.0
-        elif expected_type is bool:
-            return False
-        elif expected_type is str:
-            return ""
-        elif expected_type is list:
-            return []
-        elif expected_type is dict:
-            return {}
-        return default_values.get(param_name, None)
-
-    @staticmethod
     def map_type_name_to_type(type_name: str):
         """
         Maps a type name (string) back to a type. This is needed for casting values fetched from UI components.
@@ -44,7 +23,7 @@ class UIComponentFactory:
             "float": float,
             "str": str,
         }.get(
-            type_name, str
+            type_name, None
         )  # Default to str if not found
 
     @staticmethod
@@ -130,21 +109,14 @@ class UIComponentFactory:
         return widget
 
     @staticmethod
-    def extract_value(widget, expected_type=None):
+    def extract_value(widget: QWidget, cast_type: type = None) -> Any:
         """Extracts and returns the value from the widget, casting it to the expected type."""
-        if expected_type is None:
-            expected_type_name = widget.property("expected_type")
-            if expected_type_name == "bool":
-                expected_type = bool
-            elif expected_type_name == "int":
-                expected_type = int
-            elif expected_type_name == "float":
-                expected_type = float
-            elif expected_type_name == "str":
-                expected_type = str
-            else:
-                expected_type = None
+        if cast_type is None:
+            cast_type = UIComponentFactory.map_type_name_to_type(
+                widget.property("expected_type")
+            )
 
+        # From here cast_type is determined
         if isinstance(widget, QLineEdit):
             value = widget.text()
         elif isinstance(widget, QCheckBox):
@@ -152,12 +124,25 @@ class UIComponentFactory:
         elif isinstance(widget, (QSpinBox, QDoubleSpinBox)):
             value = widget.value()
         elif isinstance(widget, QComboBox):
-            value = (
-                widget.currentData()
-            )  # Or use currentText(), depending on what's expected
+            value = widget.currentData()
         else:
             value = None
 
-        if expected_type in [bool, int, float, str]:
-            return expected_type(value)
-        return value
+        # Special handling for boolean cast_type
+        if cast_type == bool:
+            if isinstance(value, str):
+                # Normalize the string to lower case to simplify comparisons
+                return value.lower() in [
+                    "true",
+                    "1",
+                    "on",
+                    "ok",
+                    "yes",
+                ]  # Returns True for these cases, False otherwise
+            else:
+                return bool(
+                    value
+                )  # Directly cast to bool for non-string values depending of Pythonic truthiness
+        elif cast_type in [int, float, str]:
+            return cast_type(value) if cast_type else None
+        return value if value else None

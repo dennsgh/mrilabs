@@ -203,6 +203,15 @@ class ExperimentConfiguration(QWidget):
         formWidget = QWidget()
         formLayout = QFormLayout()
 
+        duration = task.get("duration", 0.0)
+        durationWidget = UIComponentFactory.create_widget(
+            "duration", duration, float, None
+        )
+        durationWidget.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
+        )
+        formLayout.addRow(QLabel("duration (s):"), durationWidget)
+
         formWidget.setLayout(formLayout)
         try:
             task_function = self.get_function(task.get("task"))
@@ -264,17 +273,6 @@ class ExperimentConfiguration(QWidget):
             return False, f"{e}"
 
     def getUserData(self) -> dict:
-        """
-        Collects the configuration data from the UI, extracting and validating user input.
-
-        Iterates through each tab and form layout, extracting form widget values
-        and converting them to the expected data types based on the defined parameter types.
-
-        Raises a ValueError if validation fails.
-
-        Returns:
-            A dictionary containing the updated experiment configuration data.
-        """
         updated_config = {
             "experiment": {
                 "name": self.config.get("experiment", {}).get(
@@ -286,32 +284,30 @@ class ExperimentConfiguration(QWidget):
 
         for index in range(self.tabWidget.count()):
             step_widget = self.tabWidget.widget(index)
-            original_step = self.config["experiment"]["steps"][index]
-
-            updated_step = original_step.copy()
-            updated_parameters = {}
-
-            # Extract the QWidget that holds the form layout for the current step
             form_widget = step_widget.findChild(QScrollArea).widget()
             form_layout = form_widget.layout()
 
-            # Reconstruct the parameters from UI components
+            original_step = self.config["experiment"]["steps"][index]
+            updated_step = original_step.copy()
+            updated_parameters = {}
+
+            duration_updated = False
+
             for i in range(form_layout.rowCount()):
-                row_widget = form_layout.itemAt(i, QFormLayout.ItemRole.LabelRole)
-                if row_widget:
-                    param_label_widget = row_widget.widget()
-                    parameter_name = param_label_widget.text().split(" :")[
-                        0
-                    ]  # Extract parameter name before the colon
+                widget_item = form_layout.itemAt(i, QFormLayout.ItemRole.FieldRole)
+                if widget_item is not None:
+                    widget = widget_item.widget()
+                    parameter_name = widget.property("parameter_name")
+                    if parameter_name:
+                        param_value = UIComponentFactory.extract_value(widget)
+                        if parameter_name == "duration":
+                            updated_step["duration"] = param_value
+                            duration_updated = True
+                        else:
+                            updated_parameters[parameter_name] = param_value
 
-                    input_widget = form_layout.itemAt(
-                        i, QFormLayout.ItemRole.FieldRole
-                    ).widget()
-                    param_value = UIComponentFactory.extract_value(input_widget)
-                    if param_value is None:  # None indicates it wasn't recognized.
-                        continue
-
-                    updated_parameters[parameter_name] = param_value
+            if not duration_updated:
+                updated_step["duration"] = 0  # Default duration if not specified
 
             updated_step["parameters"] = updated_parameters
             updated_config["experiment"]["steps"].append(updated_step)
@@ -355,23 +351,6 @@ class ExperimentConfiguration(QWidget):
             The function associated with the task or None if not found.
         """
         return get_function_to_validate(task, self.task_functions, self.task_enum)
-
-    def validate_and_convert_value(self, text, expected_type):
-        """
-        Validates and converts text input to the expected data type.
-        Raises ValueError if the value is invalid.
-        """
-
-        if expected_type == bool:
-            # Specific logic for converting text to bool
-            return text.lower() in ["true", "1", "t", "y", "yes", "ok", "on"]
-        elif expected_type in (int, float):
-            if expected_type == int:
-                return int(text)
-            else:
-                return float(text)
-        else:
-            return text  # Return as string by default
 
     def generate_experiment_summary(self, data: dict):
         if not data or "experiment" not in data:

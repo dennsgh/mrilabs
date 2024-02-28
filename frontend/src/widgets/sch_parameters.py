@@ -137,11 +137,8 @@ class ParameterConfiguration(QWidget):
             for widget in current_widget.findChildren(QWidget):
                 parameter_name = widget.property("parameter_name")
                 if parameter_name:
-                    expected_type = UIComponentFactory.map_type_name_to_type(
-                        widget.property("expected_type")
-                    )
                     parameters[parameter_name] = UIComponentFactory.extract_value(
-                        widget, expected_type
+                        widget
                     )
         return parameters
 
