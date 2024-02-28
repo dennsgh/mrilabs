@@ -23,6 +23,7 @@ jobs:
         pip install poetry pytest && poetry install --no-root
         poetry add pytest
         poetry run python ./etc/env.py
-    - name: Test with pytest
+        
+    - name: Load .env and run tests
       run: |
-        poetry run python -m pytest . -k "not hardware"
+        poetry run dotenv run python -m pytest . -k "not hardware"
