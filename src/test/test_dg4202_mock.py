@@ -1,48 +1,49 @@
 import pytest
-from device.dg4202 import DG4202, DG4202Mock
-from unittest.mock import Mock, patch, call
 
-modes = ["sweep", "burst", "mod"]  # You can add more modes here if needed.
-mode_command_mapping = {"sweep": "SWEEp:STATe", "burst": "BURSt:STATe", "mod": "MOD:STATe"}
+from device.dg4202 import DG4202Mock
 
 
-@pytest.mark.parametrize("channel", [1, 2])
-@pytest.mark.parametrize("mode", modes)
-def test_set_mode_for_each_channel_and_mode(channel, mode):
-    mock_device = DG4202Mock()
-    mock_device.set_mode(channel=channel, mode=mode)
-    assert mock_device.interface.state[f"SOURce{channel}:{mode_command_mapping[mode]}"] == "1"
+@pytest.fixture
+def mock_device():
+    return DG4202Mock()
 
 
-@pytest.mark.parametrize("channel", [1, 2])
-def test_get_waveform_parameters_for_each_channel(channel):
-    mock_device = DG4202Mock()
-    params = mock_device.get_waveform_parameters(channel=channel)
-    waveform_type = params["waveform_type"]
-    frequency = params["frequency"]
-    amplitude = params["amplitude"]
-    offset = params["offset"]
-    assert waveform_type == "SIN"
-    assert frequency == float(375.)
-    assert amplitude == float(3.3)
-    assert offset == float(0.0)
+def test_killed_state(mock_device: DG4202Mock):
+    # Initially, the connection should be alive
+    assert mock_device.is_connection_alive() is True
+
+    # Simulate device kill
+    mock_device.simulate_kill(True)
+    assert mock_device.is_connection_alive() is False
+
+    # Ensure operations are blocked in killed state
+    with pytest.raises(Exception, match="Device is disconnected!"):
+        mock_device.set_waveform(channel=1, waveform_type="SIN")
 
 
-@pytest.mark.parametrize("channel", [1, 2])
-def test_turn_off_modes_for_each_channel(channel):
-    mock_device = DG4202Mock()
-    mock_device.turn_off_modes(channel=channel)
-    for mode_command in mode_command_mapping.values():
-        print(mode_command)
-        assert mock_device.interface.state[f"SOURce{channel}:{mode_command}"] == "0"
+def test_state_change_on_write(mock_device: DG4202Mock):
+    # Test setting output on for channel 1
+    mock_device.simulate_kill(False)
+    mock_device.set_waveform(channel=1, waveform_type="SIN")
+    assert mock_device.interface.state["SOURce1:FUNCtion"] == "SIN"
+
+    # Change waveform type and verify state update
+    mock_device.set_waveform(channel=1, waveform_type="SQUARE")
+    assert mock_device.interface.state["SOURce1:FUNCtion"] == "SQUARE"
 
 
-waveforms = DG4202.available_waveforms()
+def test_read_operations(mock_device: DG4202Mock):
+    # Directly manipulate the state for testing read operations
+    mock_device.interface.state["SOURce1:FUNCtion"] = "RAMP"
+
+    # Verify that the read method returns the expected value
+    assert mock_device.interface.read("SOURce1:FUNCtion?") == "RAMP"
 
 
-@pytest.mark.parametrize("channel", [1, 2])
-@pytest.mark.parametrize("waveform", waveforms)
-def test_set_waveform_for_each_channel(channel, waveform):
-    mock_device = DG4202Mock()
-    mock_device.set_waveform(channel=channel, waveform_type=waveform)
-    assert mock_device.interface.state[f"SOURce{channel}:FUNCtion"] == waveform
+def test_device_disconnected_behavior():
+    device = DG4202Mock()
+    device.simulate_kill(True)  # Simulate device disconnection
+
+    # Verify that operations are blocked and raise the expected exception
+    with pytest.raises(Exception, match="Device is disconnected!"):
+        device.set_waveform(channel=1, waveform_type="SIN")

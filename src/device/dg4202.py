@@ -60,7 +60,10 @@ class DG4202(Device):
 
         channel = channel or params.get("channel")
         waveform_type = waveform_type or params.get("waveform_type")
-        frequency = min(frequency or params.get("frequency"), self.FREQ_LIMIT)
+        # Default frequency to 0.0 if not provided to safely handle comparison
+        frequency = frequency if frequency is not None else params.get("frequency", 0.0)
+        # Ensure frequency does not exceed the FREQ_LIMIT
+        frequency = min(frequency, self.FREQ_LIMIT)
         amplitude = amplitude or params.get("amplitude")
         offset = offset or params.get("offset")
         if waveform_type is not None:
