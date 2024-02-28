@@ -12,6 +12,46 @@ from PyQt6.QtWidgets import (
 
 
 class UIComponentFactory:
+    TRUTH_VALUES = [
+        "true",
+        "1",
+        "on",
+        "ok",
+        "yes",
+        "resume",
+        "continue",
+    ]
+    FALSE_VALUES = [
+        "false",
+        "0",
+        "off",
+        "no",
+        "cancel",
+        "abort",
+        "deny",
+    ]
+
+    @staticmethod
+    def findTextIndexForBooleanValue(widget: QComboBox, value: str) -> int:
+        # Normalize the string value for comparison
+        normalized_value = value.lower()
+        # Determine if the value is considered true or false
+        if normalized_value in UIComponentFactory.TRUTH_VALUES:
+            truthy = True
+        elif normalized_value in UIComponentFactory.FALSE_VALUES:
+            truthy = False
+        else:
+            return 0  # Default to the first index if undetermined
+
+        # Iterate through the combo box items to find the match
+        for i in range(widget.count()):
+            item_text = widget.itemText(i).lower()
+            if (truthy and item_text in UIComponentFactory.TRUTH_VALUES) or (
+                not truthy and item_text in UIComponentFactory.FALSE_VALUES
+            ):
+                return i
+        return 0  # Default to the first index if no match found
+
     @staticmethod
     def map_type_name_to_type(type_name: str):
         """
@@ -96,7 +136,21 @@ class UIComponentFactory:
                 value if value is not None else expected_type(default_value)
             )
         elif isinstance(widget, QComboBox):
-            if value in constraints:  # Assuming `constraints` is a list for QComboBox
+            if expected_type == bool:
+                # Handle boolean parameters differently
+                if isinstance(value, str):
+                    index = UIComponentFactory.findTextIndexForBooleanValue(
+                        widget, value
+                    )
+                    widget.setCurrentIndex(index)
+                elif isinstance(value, bool):
+                    # Convert boolean to string representation to find the index
+                    value_str = "true" if value else "false"
+                    index = UIComponentFactory.findTextIndexForBooleanValue(
+                        widget, value_str
+                    )
+                    widget.setCurrentIndex(index)
+            elif value in constraints:  # Assuming `constraints` is a list for QComboBox
                 index = widget.findData(value)
                 widget.setCurrentIndex(index)
             else:
@@ -132,13 +186,7 @@ class UIComponentFactory:
         if cast_type == bool:
             if isinstance(value, str):
                 # Normalize the string to lower case to simplify comparisons
-                return value.lower() in [
-                    "true",
-                    "1",
-                    "on",
-                    "ok",
-                    "yes",
-                ]  # Returns True for these cases, False otherwise
+                return value.lower() in UIComponentFactory.TRUTH_VALUES
             else:
                 return bool(
                     value

@@ -22,7 +22,8 @@ class TaskName(Enum):
 @parameter_constraints(channel=(1, 2), output=["ON", "OFF"])
 def task_on_off_dg4202(channel: int, output: bool) -> bool:
     factory.dg4202_manager.device.output_on_off(
-        channel=channel, status=True if output == "ON" else False
+        channel=channel,
+        status=output,  # the decorator above will be handled by ui_factory.py
     )
     return True
 
