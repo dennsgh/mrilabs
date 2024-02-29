@@ -1,7 +1,55 @@
+# Example of experiment definition reusing tasks in tasks.py
 experiment:
+  name: Waveform Experiment
   steps:
-  - task: DG4202_TOGGLE
-    duration: 0.0
+  - task: DG4202_SET_WAVEFORM
+    description: my description 1
+    duration: 1  # Duration in seconds, how long this step should last before the next step runs
     parameters:
       channel: 1
-      output: true
+      send_on: true
+      waveform_type: PULSE
+      amplitude: 2
+      frequency: 5
+      offset: 0
+  - task: Set Waveform Parameters # you can also use task strings but generally using the TaskEnum name instead of the value is recommended!
+    description: my description 2
+    duration: 1
+    parameters:
+      channel: 1
+      send_on: true
+      waveform_type: PULSE
+      amplitude: 3
+      frequency: 10
+      offset: 0
+  - task: DG4202_SET_WAVEFORM
+    description: my description 3
+    duration: 1
+    parameters:
+      channel: 1
+      send_on: true
+      waveform_type: PULSE
+      amplitude: 3.0
+      frequency: 15
+      offset: 0
+  - task: DG4202_TOGGLE
+    description: turn ch 1 off
+    duration: 0
+    parameters:
+      channel: 1
+      output: false
+  - task: DG4202_SET_SWEEP
+    description: sweep
+    duration: 1
+    parameters:
+      channel: 2
+      time: 5
+      fstart: 10
+      fstop: 100
+      send_on: true
+  - task: DG4202_TOGGLE
+    description: turn ch2 off
+    duration: 0
+    parameters:
+      channel: 2
+      output: false
