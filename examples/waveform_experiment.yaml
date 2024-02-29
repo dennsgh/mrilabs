@@ -8,7 +8,7 @@ experiment:
     parameters:
       channel: 1
       send_on: true
-      waveform_type: PULSE
+      waveform_type: SIN
       amplitude: 2
       frequency: 5
       offset: 0

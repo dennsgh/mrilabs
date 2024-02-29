@@ -162,7 +162,7 @@ class ExperimentConfiguration(QWidget):
     def errorHandling(
         self, overall_valid: bool, message_dict: dict, highest_error_level: ErrorLevel
     ) -> str:
-        descriptionText = "Configuration Summary:\n"
+        descriptionText = "---\n"
 
         if message_dict["errors"]:
             descriptionText += "\nErrors:\n" + "\n".join(message_dict["errors"])
