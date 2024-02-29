@@ -1,5 +1,6 @@
 import inspect
 from enum import Enum
+from typing import Callable
 
 import yaml
 from features.task_validator import (
@@ -10,6 +11,7 @@ from features.task_validator import (
 from header import ErrorLevel
 from PyQt6.QtWidgets import (
     QFormLayout,
+    QHBoxLayout,
     QLabel,
     QMessageBox,
     QScrollArea,
@@ -45,33 +47,75 @@ class ExperimentConfiguration(QWidget):
             task_enum: An enumeration representing the valid task types. Defaults to None.
         """
         super().__init__(parent)
-        self.task_functions = task_functions
-        self.task_enum = task_enum
+        self.task_functions: dict[str, Callable] = task_functions
+        self.task_enum: Enum = task_enum
         self.config: dict[str, object] | None = None
+        self.updated_config: dict = None
         self.initUI()
 
-    def initUI(self) -> None:
-        """
-        Initializes the user interface of the widget.
-        """
-        self.main_layout = QVBoxLayout(self)
-        self.tabWidget = QTabWidget(self)
-        self.main_layout.addWidget(self.tabWidget)
+    def initUI(self):
+        # Main horizontal layout
+        self.mainHLayout = QHBoxLayout(self)
 
+        # Left vertical layout for tabs and configuration details
+        self.leftVLayout = QVBoxLayout()
+        self.tabWidget = QTabWidget(self)
         self.descriptionWidget = QTextEdit(self)
         self.descriptionWidget.setReadOnly(True)
         self.descriptionWidget.setText(
             "Load an experiment configuration to see its details here."
         )
-        self.main_layout.addWidget(self.descriptionWidget)
-        # Set size policy to make sure the widget expands both horizontally and vertically
+
+        # Add widgets to the left layout
+        self.leftVLayout.addWidget(self.tabWidget)
+        self.leftVLayout.addWidget(self.descriptionWidget)
+
+        # Right vertical layout for YAML display
+        self.rightVLayout = QVBoxLayout()
+        self.yamlDisplayWidget = QTextEdit(self)
+        self.yamlDisplayWidget.setReadOnly(True)
+
+        # Add YAML display widget to the right layout
+        self.rightVLayout.addWidget(self.yamlDisplayWidget)
+
+        # Add both left and right layouts to the main layout
+        self.mainHLayout.addLayout(
+            self.leftVLayout, 3
+        )  # 3: proportion of space taken by left layout
+        self.mainHLayout.addLayout(
+            self.rightVLayout, 2
+        )  # 2: proportion of space taken by right layout
+
+        # Connect tab change signal to update YAML display
+        self.tabWidget.currentChanged.connect(self.onTabChanged)
+
+        # Adjust size policies for responsive layout
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.tabWidget.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
         )
+        self.descriptionWidget.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
+        self.yamlDisplayWidget.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
+
+    def onTabChanged(self):
+        """Updates the YAML display when the user changes tabs."""
+        self.updateYamlDisplay()
+
+    def updateYamlDisplay(self):
+        # Automatically grab the current tab index if needed or work with the updated_config
+        currentTabIndex = self.tabWidget.currentIndex()
+        if currentTabIndex != -1:
+            self.getUserData()  # Ensure the updated_config is current
+            step_config = self.updated_config["experiment"]["steps"][currentTabIndex]
+            yamlStr = yaml.dump(step_config, sort_keys=False)
+            self.yamlDisplayWidget.setText(yamlStr)
 
     def loadConfiguration(self, config_path):
-        valid, message, descriptionText = self.load_and_validate(config_path)
+        valid, message, descriptionText = self.loadValidate(config_path)
         self.descriptionWidget.setText(descriptionText)
 
         if valid:
@@ -115,7 +159,7 @@ class ExperimentConfiguration(QWidget):
 
         return overall_valid, message_dict, highest_error_level
 
-    def error_handling(
+    def errorHandling(
         self, overall_valid: bool, message_dict: dict, highest_error_level: ErrorLevel
     ) -> str:
         descriptionText = "Configuration Summary:\n"
@@ -140,7 +184,7 @@ class ExperimentConfiguration(QWidget):
 
         return descriptionText
 
-    def load_and_validate(self, config_path: str) -> None:
+    def loadValidate(self, config_path: str) -> None:
         """
         Loads and displays an experiment configuration or handles any errors encountered.
 
@@ -156,7 +200,7 @@ class ExperimentConfiguration(QWidget):
             return False, "No configuration loaded.", {}
 
         overall_valid, message_dict, highest_error_level = self.validate(self.config)
-        descriptionText = self.error_handling(
+        descriptionText = self.errorHandling(
             overall_valid, message_dict, highest_error_level
         )
 
@@ -205,7 +249,7 @@ class ExperimentConfiguration(QWidget):
 
         duration = task.get("duration", 0.0)
         durationWidget = UIComponentFactory.create_widget(
-            "duration", duration, float, None
+            "duration", duration, float, None, self.updateYamlDisplay
         )
         durationWidget.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
@@ -245,7 +289,11 @@ class ExperimentConfiguration(QWidget):
                 specific_constraints = parameter_constraints.get(parameter_name, None)
 
                 widget = UIComponentFactory.create_widget(
-                    parameter_name, value, expected_type, specific_constraints
+                    parameter_name,
+                    value,
+                    expected_type,
+                    specific_constraints,
+                    self.updateYamlDisplay,
                 )
                 widget.setSizePolicy(
                     QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
@@ -273,21 +321,26 @@ class ExperimentConfiguration(QWidget):
             return False, f"{e}"
 
     def getUserData(self) -> dict:
-        updated_config = {
-            "experiment": {
-                "name": self.config.get("experiment", {}).get(
-                    "name", "Unnamed Experiment"
-                ),
-                "steps": [],
+        if self.updated_config is None:
+            self.updated_config = {
+                "experiment": {
+                    "name": self.config.get("experiment", {}).get(
+                        "name", "Unnamed Experiment"
+                    ),
+                    "steps": [],
+                }
             }
-        }
+
+        self.updated_config["experiment"][
+            "steps"
+        ].clear()  # Clear existing steps to repopulate
 
         for index in range(self.tabWidget.count()):
             step_widget = self.tabWidget.widget(index)
             form_widget = step_widget.findChild(QScrollArea).widget()
             form_layout = form_widget.layout()
 
-            original_step = self.config["experiment"]["steps"][index]
+            original_step: dict = self.config["experiment"]["steps"][index]
             updated_step = original_step.copy()
             updated_parameters = {}
 
@@ -310,9 +363,7 @@ class ExperimentConfiguration(QWidget):
                 updated_step["duration"] = 0  # Default duration if not specified
 
             updated_step["parameters"] = updated_parameters
-            updated_config["experiment"]["steps"].append(updated_step)
-
-        return updated_config
+            self.updated_config["experiment"]["steps"].append(updated_step)
 
     def getConfiguration(self) -> dict:
         """
@@ -325,18 +376,20 @@ class ExperimentConfiguration(QWidget):
             ValueError: If validation of the user-modified configuration fails.
         """
         # Extract the user-modified configuration from the UI elements
-        data = self.getUserData()
+        self.getUserData()
 
         # Validate the extracted data
-        overall_valid, messages, highest_error_level = self.validate(data)
-        descriptionText = self.error_handling(
+        overall_valid, messages, highest_error_level = self.validate(
+            self.updated_config
+        )
+        descriptionText = self.errorHandling(
             overall_valid, messages, highest_error_level
         )
         if not overall_valid:
             self.descriptionWidget.setText(descriptionText)
             raise ValueError("Configuration validation failed.")
 
-        return data
+        return self.updated_config
 
     def get_function(self, task: str) -> object | None:
         """

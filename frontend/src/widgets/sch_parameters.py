@@ -27,14 +27,22 @@ class ParameterConfiguration(QWidget):
         task_dictionary: Dict[str, Dict[str, Callable]],
         parent: Optional[QWidget] = None,
         task_enum: Optional[Any] = None,
+        input_callback: Callable = None,
     ) -> None:
         super().__init__(parent)
+        self.input_callback = input_callback
+        self.updated_config: dict = None
         self.task_dictionary: Dict[str, Dict[str, Callable]] = task_dictionary
         self.task_enum: Optional[Any] = task_enum
         self.widget_cache: Dict[Tuple[str, str], QWidget] = {}
+        self.initUI()
+
+    def initUI(self):
         self.stacked_widget: QStackedWidget = QStackedWidget(self)
         self.main_layout: QVBoxLayout = QVBoxLayout(self)
         self.main_layout.addWidget(self.stacked_widget)
+        self.mainHLayout = QHBoxLayout(self)
+        self.mainHLayout.addLayout(self.main_layout)
         self.setLayout(self.main_layout)
 
     def updateUI(self, device: str, task_name: str) -> None:
@@ -79,7 +87,7 @@ class ParameterConfiguration(QWidget):
             param_annotation = parameter_annotations.get(param, "")
 
             widget_spec = UIComponentFactory.create_widget(
-                param, None, expected_type, constraints
+                param, None, expected_type, constraints, self.input_callback
             )
             # Include parameter name and type in the spec
             spec.append((param, widget_spec, expected_type, param_annotation))
@@ -131,16 +139,15 @@ class ParameterConfiguration(QWidget):
         Returns:
             Dict[str, Any]: A dictionary containing the collected input data.
         """
-        parameters: Dict[str, Any] = {}
+        self.updated_config: Dict[str, Any] = {}
         current_widget = self.stacked_widget.currentWidget()
         if current_widget:
             for widget in current_widget.findChildren(QWidget):
                 parameter_name = widget.property("parameter_name")
                 if parameter_name:
-                    parameters[parameter_name] = UIComponentFactory.extract_value(
-                        widget
+                    self.updated_config[parameter_name] = (
+                        UIComponentFactory.extract_value(widget)
                     )
-        return parameters
 
     def getConfiguration(self) -> Dict[str, Any]:
         """
@@ -153,5 +160,5 @@ class ParameterConfiguration(QWidget):
         Returns:
             Dict[str, Any]: A dictionary containing the validated configuration.
         """
-        # TODO: validation
-        return self.getUserData()
+        self.getUserData()
+        return self.updated_config

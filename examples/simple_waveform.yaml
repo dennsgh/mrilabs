@@ -2,19 +2,19 @@
 experiment:
   name: Toggle Experiment
   steps:
-    - task: DG4202_SET_WAVEFORM
-      description: Turn channel 1 on
-      duration: 5  
-      parameters:
-        channel: 1
-        send_on: true
-        waveform_type: PULSE
-        amplitude: 2  # Set your desired amplitude
-        frequency: 5  # Set your desired frequency
-        offset: 0
-    - task: DG4202_TOGGLE
-      description: Turn channel 1 off after 5 seconds
-      duration: 0 # Not wait after finishing step 1
-      parameters:
-        channel: 1
-        output: false
+  - task: DG4202_SET_WAVEFORM
+    description: Turn channel 1 on
+    duration: 5  
+    parameters:
+      channel: 1
+      send_on: true
+      waveform_type: PULSE
+      amplitude: 2  # Set your desired amplitude
+      frequency: 5  # Set your desired frequency
+      offset: 0
+  - task: DG4202_TOGGLE
+    description: Turn channel 1 off after 5 seconds
+    duration: 0 # Not wait after finishing step 1
+    parameters:
+      channel: 1
+      output: off

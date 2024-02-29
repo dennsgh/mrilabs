@@ -1,6 +1,6 @@
-from enum import Enum
-from typing import Any, Tuple
+from typing import Any, Callable, Tuple, Type
 
+from PyQt6.QtCore import pyqtBoundSignal
 from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -30,6 +30,14 @@ class UIComponentFactory:
         "abort",
         "deny",
     ]
+
+    SIGNAL_MAP = {
+        QLineEdit: "textChanged",
+        QSpinBox: "valueChanged",
+        QDoubleSpinBox: "valueChanged",
+        QComboBox: "currentIndexChanged",
+        QCheckBox: "stateChanged",
+    }
 
     @staticmethod
     def findTextIndexForBooleanValue(widget: QComboBox, value: str) -> int:
@@ -115,7 +123,11 @@ class UIComponentFactory:
 
     @staticmethod
     def create_widget(
-        parameter_name: str, value: Any, expected_type: type, constraints: Any
+        parameter_name: str,
+        value: Any,
+        expected_type: type,
+        constraints: Any,
+        callback: Callable = None,
     ) -> QWidget:
         """
         Creates a widget based on the parameter's expected type and the specific constraints.
@@ -159,8 +171,26 @@ class UIComponentFactory:
             widget.setText(str(value) if value is not None else str(default_value))
         widget.setProperty("expected_type", expected_type.__name__)
         widget.setProperty("parameter_name", parameter_name)
-
+        if callback:
+            UIComponentFactory.connect_widget_signal(widget, callback)
         return widget
+
+    @staticmethod
+    def connect_widget_signal(widget: QWidget, callback: Callable[[Any], None]) -> None:
+        """
+        Connects the appropriate signal of the widget to the given callback function.
+
+        Args:
+            widget: The widget whose signal needs to be connected.
+            callback: The callback function to be called when the signal is emitted.
+        """
+        widget_class: Type[QWidget] = type(widget)  # Get the class of the widget
+        if widget_class in UIComponentFactory.SIGNAL_MAP:
+            signal_name: str = UIComponentFactory.SIGNAL_MAP[widget_class]
+            signal: pyqtBoundSignal = getattr(widget, signal_name)
+            signal.connect(callback)
+        else:
+            raise ValueError("Unsupported widget type for signal connection")
 
     @staticmethod
     def extract_value(widget: QWidget, cast_type: type = None) -> Any:
