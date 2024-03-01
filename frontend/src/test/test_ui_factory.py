@@ -13,8 +13,9 @@ from widgets.ui_factory import UIComponentFactory
 
 
 class TestUIComponentFactory:
-    @app.fixture(autouse=True, scope="session")
-    def setup_qapp():
+    @pytest.fixture(autouse=True)
+    def setup_qapp(self):
+        # Initialize QApplication to create widgets
         app = QApplication.instance()
         if not app:
             app = QApplication(sys.argv)
