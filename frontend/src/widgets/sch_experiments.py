@@ -8,7 +8,7 @@ from features.task_validator import (
     get_task_enum_value,
     validate_configuration,
 )
-from header import ErrorLevel
+from header import AT_TIME_KEYWORD, WAIT_KEYWORD, ErrorLevel
 from PyQt6.QtWidgets import (
     QFormLayout,
     QHBoxLayout,
@@ -247,14 +247,19 @@ class ExperimentConfiguration(QWidget):
         formWidget = QWidget()
         formLayout = QFormLayout()
 
-        duration = task.get("duration", 0.0)
+        at_time = task.get(AT_TIME_KEYWORD, 0.0)
+        duration = task.get(WAIT_KEYWORD, 0.0)
         durationWidget = UIComponentFactory.create_widget(
-            "duration", duration, float, None, self.updateYamlDisplay
+            WAIT_KEYWORD, duration, float, None, self.updateYamlDisplay
+        )
+        atTimeWidget = UIComponentFactory.create_widget(
+            AT_TIME_KEYWORD, at_time, float, None, self.updateYamlDisplay
         )
         durationWidget.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
         )
-        formLayout.addRow(QLabel("duration (s):"), durationWidget)
+        formLayout.addRow(QLabel(f"{WAIT_KEYWORD} (s):"), durationWidget)
+        formLayout.addRow(QLabel(f"{AT_TIME_KEYWORD} (s):"), atTimeWidget)
 
         formWidget.setLayout(formLayout)
         try:
@@ -345,6 +350,7 @@ class ExperimentConfiguration(QWidget):
             updated_parameters = {}
 
             duration_updated = False
+            at_time_updated = False
 
             for i in range(form_layout.rowCount()):
                 widget_item = form_layout.itemAt(i, QFormLayout.ItemRole.FieldRole)
@@ -353,15 +359,22 @@ class ExperimentConfiguration(QWidget):
                     parameter_name = widget.property("parameter_name")
                     if parameter_name:
                         param_value = UIComponentFactory.extract_value(widget)
-                        if parameter_name == "duration":
-                            updated_step["duration"] = param_value
+                        if parameter_name == WAIT_KEYWORD:
+                            updated_step[WAIT_KEYWORD] = param_value
                             duration_updated = True
+                        else:
+                            updated_parameters[parameter_name] = param_value
+                            param_value = UIComponentFactory.extract_value(widget)
+                        if parameter_name == AT_TIME_KEYWORD:
+                            updated_step[WAIT_KEYWORD] = param_value
+                            at_time_updated = True
                         else:
                             updated_parameters[parameter_name] = param_value
 
             if not duration_updated:
-                updated_step["duration"] = 0  # Default duration if not specified
-
+                updated_step[WAIT_KEYWORD] = 0  # Default duration if not specified
+            if not at_time_updated:
+                updated_step[AT_TIME_KEYWORD] = 0  # Default duration if not specified
             updated_step["parameters"] = updated_parameters
             self.updated_config["experiment"]["steps"].append(updated_step)
 

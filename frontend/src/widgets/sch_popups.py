@@ -4,6 +4,7 @@ from typing import Callable
 import yaml
 from features.task_validator import get_task_enum_name, get_task_enum_value, is_in_enum
 from features.tasks import TaskName, get_tasks
+from header import AT_TIME_KEYWORD, WAIT_KEYWORD, TIMESTAMP_KEYWORD
 from PyQt6 import QtCore
 from PyQt6.QtWidgets import (
     QComboBox,
@@ -32,8 +33,6 @@ from scheduler.timekeeper import Timekeeper
 
 
 class JobConfigPopup(QDialog):
-    TIMESTAMP = "timestamp"
-    DURATION = "duration"
     NO_TASK_STRING = "No tasks available"
 
     def __init__(self, timekeeper: Timekeeper, callback: Callable):
@@ -75,7 +74,7 @@ class JobConfigPopup(QDialog):
         timeConfigGroup = QGroupBox()
         timeConfigLayout = QHBoxLayout(timeConfigGroup)
         self.timeConfigComboBox = QComboBox()
-        self.timeConfigComboBox.addItems([self.DURATION, self.TIMESTAMP])
+        self.timeConfigComboBox.addItems([AT_TIME_KEYWORD, TIMESTAMP_KEYWORD])
         timeConfigLayout.addWidget(self.timeConfigComboBox)
 
         self.setupTimeConfiguration(timeConfigLayout)
@@ -121,17 +120,17 @@ class JobConfigPopup(QDialog):
         parameters = self.parameterConfig.getConfiguration()
         now = datetime.now()
 
-        if self.timeConfigComboBox.currentText() == self.TIMESTAMP:
+        if self.timeConfigComboBox.currentText() == TIMESTAMP_KEYWORD:
             schedule_time = self.getDateTimeFromInputs()
-            # Calculate the duration as the difference between the schedule time and now
-            duration = schedule_time - now
+            # Calculate the at_time as the difference between the schedule time and now
+            at_time = schedule_time - now
         else:
-            # Directly use the duration from the inputs if "Duration" is selected
-            duration = self.getDateTimeFromInputs() - now
+            # Directly use the at_time from the inputs if "at_time" is selected
+            at_time = self.getDateTimeFromInputs() - now
 
-        # Ensure duration is always positive before displaying
-        if duration.total_seconds() < 0:
-            duration = timedelta(seconds=0)  # Reset to 0 if negative
+        # Ensure at_time is always positive before displaying
+        if at_time.total_seconds() < 0:
+            at_time = timedelta(seconds=0)  # Reset to 0 if negative
 
         config = {
             "experiment": {
@@ -140,7 +139,7 @@ class JobConfigPopup(QDialog):
                         "task": get_task_enum_name(
                             self.taskSelect.currentText(), TaskName
                         ),
-                        "duration": duration.total_seconds(),
+                        AT_TIME_KEYWORD: at_time.total_seconds(),
                         "parameters": parameters,
                     }
                 ]
@@ -150,9 +149,9 @@ class JobConfigPopup(QDialog):
         self.yamlDisplayWidget.setText(yamlStr)
 
     def updateTimeConfigurationVisibility(self, selection):
-        isTimestamp = selection == self.TIMESTAMP
-        self.timestampWidget.setVisible(isTimestamp)
-        self.durationWidget.setVisible(not isTimestamp)
+        isTimestamp = selection == TIMESTAMP_KEYWORD
+        TIMESTAMP_KEYWORDWidget.setVisible(isTimestamp)
+        AT_TIME_KEYWORDWidget.setVisible(not isTimestamp)
 
     def updateTaskList(self):
         selected_device = self.deviceSelect.currentText()
@@ -179,18 +178,18 @@ class JobConfigPopup(QDialog):
 
     def setupTimeConfiguration(self, layout):
         # Create widgets to hold the grid layouts
-        self.durationWidget = QWidget(self)
-        self.timestampWidget = QWidget(self)
+        AT_TIME_KEYWORDWidget = QWidget(self)
+        TIMESTAMP_KEYWORDWidget = QWidget(self)
 
         # Set grid layouts to these widgets
         timestampGridLayout = self.createDateTimeInputs(datetime.now())
-        durationGridLayout = self.createDurationInputs()
-        self.timestampWidget.setLayout(timestampGridLayout)
-        self.durationWidget.setLayout(durationGridLayout)
+        at_timeGridLayout = self.createat_timeInputs()
+        TIMESTAMP_KEYWORDWidget.setLayout(timestampGridLayout)
+        AT_TIME_KEYWORDWidget.setLayout(at_timeGridLayout)
 
         # Add these widgets to the main layout
-        layout.addWidget(self.timestampWidget)
-        layout.addWidget(self.durationWidget)
+        layout.addWidget(TIMESTAMP_KEYWORDWidget)
+        layout.addWidget(AT_TIME_KEYWORDWidget)
 
         self.updateTimeConfigurationVisibility(self.timeConfigComboBox.currentText())
 
@@ -203,7 +202,7 @@ class JobConfigPopup(QDialog):
 
     def createDateTimeInputs(self, default_value):
         gridLayout = QGridLayout()
-        self.timestampInputs = {}
+        TIMESTAMP_KEYWORDInputs = {}
 
         # Define the fields, limits, and their positions in the grid
         fields = [
@@ -231,13 +230,13 @@ class JobConfigPopup(QDialog):
 
             gridLayout.addWidget(label, row, col * 2)
             gridLayout.addWidget(inputWidget, row, col * 2 + 1)
-            self.timestampInputs[field] = inputWidget
+            TIMESTAMP_KEYWORDInputs[field] = inputWidget
 
         return gridLayout
 
-    def createDurationInputs(self):
+    def createat_timeInputs(self):
         gridLayout = QGridLayout()
-        self.durationInputs = {}
+        AT_TIME_KEYWORDInputs = {}
 
         # Define the fields and their positions in the grid
         fields = [
@@ -262,20 +261,20 @@ class JobConfigPopup(QDialog):
 
             gridLayout.addWidget(label, row, col * 2)
             gridLayout.addWidget(inputWidget, row, col * 2 + 1)
-            self.durationInputs[field] = inputWidget
+            AT_TIME_KEYWORDInputs[field] = inputWidget
 
         return gridLayout
 
     def toggleTimeInputs(self):
         # Toggle visibility of time input fields based on selected option
-        isTimestamp = bool(self.timeConfigComboBox.currentText() == self.TIMESTAMP)
-        for input in self.timestampInputs:
+        isTimestamp = bool(self.timeConfigComboBox.currentText() == TIMESTAMP_KEYWORD)
+        for input in TIMESTAMP_KEYWORDInputs:
             input.setVisible(isTimestamp)
-        for input in self.durationInputs:
+        for input in AT_TIME_KEYWORDInputs:
             input.setVisible(not isTimestamp)
 
     def accept(self):
-        # Schedule the task with either timestamp or duration
+        # Schedule the task with either timestamp or at_time
         selected_task = self.taskSelect.currentText()
         schedule_time = self.getDateTimeFromInputs()
         try:
@@ -292,30 +291,30 @@ class JobConfigPopup(QDialog):
             print({f"Error during commissioning job on : {e}"})
 
     def getDateTimeFromInputs(self):
-        if self.timeConfigComboBox.currentText() == self.TIMESTAMP:
+        if self.timeConfigComboBox.currentText() == TIMESTAMP_KEYWORD:
             # Convert microsecond value to an integer
-            microsecond = int(self.timestampInputs["millisecond"].value() * 1000)
+            microsecond = int(TIMESTAMP_KEYWORDInputs["millisecond"].value() * 1000)
 
             return datetime(
-                year=self.timestampInputs["year"].value(),
-                month=self.timestampInputs["month"].value(),
-                day=self.timestampInputs["day"].value(),
-                hour=self.timestampInputs["hour"].value(),
-                minute=self.timestampInputs["minute"].value(),
-                second=self.timestampInputs["second"].value(),
+                year=TIMESTAMP_KEYWORDInputs["year"].value(),
+                month=TIMESTAMP_KEYWORDInputs["month"].value(),
+                day=TIMESTAMP_KEYWORDInputs["day"].value(),
+                hour=TIMESTAMP_KEYWORDInputs["hour"].value(),
+                minute=TIMESTAMP_KEYWORDInputs["minute"].value(),
+                second=TIMESTAMP_KEYWORDInputs["second"].value(),
                 microsecond=microsecond,
             )
         else:
-            duration = timedelta(
-                days=self.durationInputs["days"].value(),
-                hours=self.durationInputs["hours"].value(),
-                minutes=self.durationInputs["minutes"].value(),
-                seconds=self.durationInputs["seconds"].value(),
+            at_time = timedelta(
+                days=AT_TIME_KEYWORDInputs["days"].value(),
+                hours=AT_TIME_KEYWORDInputs["hours"].value(),
+                minutes=AT_TIME_KEYWORDInputs["minutes"].value(),
+                seconds=AT_TIME_KEYWORDInputs["seconds"].value(),
                 milliseconds=int(
-                    self.durationInputs["milliseconds"].value()
+                    AT_TIME_KEYWORDInputs["milliseconds"].value()
                 ),  # Ensure integer for milliseconds
             )
-            return datetime.now() + duration
+            return datetime.now() + at_time
 
 
 class ExperimentConfigPopup(QDialog):
@@ -407,7 +406,8 @@ class ExperimentConfigPopup(QDialog):
             .get("experiment", {})
             .get("steps", [])
         )
-        duration = timedelta(seconds=0)
+        wait = timedelta(seconds=0)
+        at_time = timedelta(seconds=0)
 
         for step in steps:
             task_str: str = step.get("task")
@@ -419,7 +419,7 @@ class ExperimentConfigPopup(QDialog):
                     self, "Error Scheduling Task", f"Unknown task: '{task_name_str}'"
                 )
                 return
-            schedule_time = datetime.now() + duration
+            schedule_time = datetime.now() + at_time + wait
             try:
                 # Schedule the task with timekeeper
                 self.timekeeper.add_job(task_name_str, schedule_time, kwargs=parameters)
@@ -431,9 +431,9 @@ class ExperimentConfigPopup(QDialog):
                 )
                 return  # Stop scheduling further tasks on error
 
-            # Update total duration with the duration of the current step
-            step_duration = timedelta(seconds=step.get("duration", 0))
-            duration += step_duration
+            # Update total at_time with the at_time of the current step
+            step_at_time = timedelta(seconds=step.get("at_time", 0))
+            at_time += step_at_time
 
         self.callback()  # Trigger any post-scheduling actions
         super().accept()

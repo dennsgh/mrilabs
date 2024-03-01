@@ -30,7 +30,6 @@ class Worker:
         self.logfile = logfile or Path(os.getenv("LOGS"), "worker.log")
         self.configure_logging()
         self.logger.info("Function Map OK")
-        self.logfile = logfile or Path(os.getenv("LOGS"), "worker.log")
 
     def configure_logging(self) -> None:
         """
@@ -146,7 +145,7 @@ class Worker:
             Any: The result of the task function, if any.
         """
         task_func = self.function_map.get_function(task_name)
-        result = False # Initialize false
+        result = False  # Initialize false
         error_info = None  # Initialize a variable to store exception info
         if task_func:
             self.logger.info(f"Executing task '{task_name}'(id:{job_id}).")
