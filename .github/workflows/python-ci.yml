@@ -17,6 +17,10 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: "3.11.5"
+    
+    
+    - name: Install system dependencies
+      run: sudo apt-get update && sudo apt-get install -y libegl1 libgl1-mesa-dev
 
     - name: Install dependencies
       run: |
@@ -26,4 +30,4 @@ jobs:
         
     - name: Load .env and run tests
       run: |
-        poetry run dotenv run python -m pytest . -k "not hardware"
+        poetry run dotenv run python -m pytest .
