@@ -14,7 +14,6 @@ from PyQt6.QtWidgets import (
     QGroupBox,
     QHBoxLayout,
     QLabel,
-    QLineEdit,
     QMessageBox,
     QPushButton,
     QSizePolicy,
@@ -50,6 +49,7 @@ class JobConfigPopup(QDialog):
         self.updateTaskList()
 
     def initUI(self):
+        self.setWindowTitle("Scheduler")
         self.gridLayout = QGridLayout(self)
         self.setupConfigurationGroup()
         self.setupTimeConfigurationGroup()
@@ -338,7 +338,7 @@ class ExperimentConfigPopup(QDialog):
         return merged_parameters
 
     def initUI(self):
-        self.setWindowTitle("Experiment Configuration")
+        self.setWindowTitle("Experiment Scheduler")
         self.resize(600, 500)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.layout = QVBoxLayout(self)

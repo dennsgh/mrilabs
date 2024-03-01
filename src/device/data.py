@@ -21,8 +21,11 @@ class DataBuffer:
         self.buffer_size = buffer_size
 
     def update(self):
-        new_data = self.data_source.query_data()
-        self.buffer.append(new_data)
+        try:
+            new_data = self.data_source.query_data()
+            self.buffer.append(new_data)
+        except Exception as e:
+            raise RuntimeError(f"Error querying data source: {e}")
 
     def get_data(self):
         return np.concatenate(list(self.buffer))

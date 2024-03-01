@@ -239,7 +239,7 @@ class OscilloscopeWidget(QWidget):
     def update_data(self):
         try:
             self.edux1002a_manager.buffers[self.active_channel].update()
-            voltage = self.edux1002a_manager.buffers[self.active_channel].get_data()
+            voltage = self.edux1002a_manager.get_data(self.active_channel)
             time = np.arange(len(voltage))
             self.plot_data[self.active_channel].setData(time, voltage)
         except Exception as e:

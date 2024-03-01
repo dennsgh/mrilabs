@@ -1,14 +1,14 @@
 import abc
-import json
 import logging
 import os
 import time
-from datetime import datetime, timedelta
+from datetime import timedelta
 from pathlib import Path
 from unittest.mock import MagicMock
 
+import numpy as np
 import pyvisa
-from filelock import FileLock, Timeout
+from filelock import FileLock
 
 # Import classes and modules from device module as needed.
 from device.data import DataBuffer
@@ -217,12 +217,17 @@ class EDUX1002AManager(DeviceManagerBase):
             self.device: EDUX1002AMock = self._mock_device
         else:
             self.device: EDUX1002A = detector.detect_device()
-        if not self.device:
-            return
-        self.buffers = {
-            1: DataBuffer(EDUX1002ADataSource(self.device, 1), self.buffer_size),
-            2: DataBuffer(EDUX1002ADataSource(self.device, 2), self.buffer_size),
-        }
+        self.buffers = (
+            {
+                1: DataBuffer(EDUX1002ADataSource(self.device, 1), self.buffer_size),
+                2: DataBuffer(EDUX1002ADataSource(self.device, 2), self.buffer_size),
+            }
+            if self.device
+            else {
+                1: None,
+                2: None,
+            }
+        )
 
     def get_device(self) -> EDUX1002A:
         state = self.state_manager.read_state()
@@ -247,5 +252,5 @@ class EDUX1002AManager(DeviceManagerBase):
         self.data_source = EDUX1002ADataSource(self.device)
         return self.device
 
-    def get_data(self) -> dict:
-        return {1: self.buffers[1].get_data(), 2: self.buffers[2].get_data()}
+    def get_data(self, channel: int) -> dict:
+        return self.buffers[channel].get_data() if self.device else None

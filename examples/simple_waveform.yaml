@@ -1,6 +1,5 @@
-# Duration is 'how long should I wait before executing the next step'
+# Duration is the wait time before executing the next step
 experiment:
-  name: Toggle Experiment
   steps:
   - task: DG4202_SET_WAVEFORM
     description: Turn channel 1 on
@@ -9,12 +8,24 @@ experiment:
       channel: 1
       send_on: true
       waveform_type: PULSE
-      amplitude: 2  # Set your desired amplitude
-      frequency: 5  # Set your desired frequency
+      amplitude: 2
+      frequency: 5 
       offset: 0
   - task: DG4202_TOGGLE
-    description: Turn channel 1 off after 5 seconds
-    duration: 0 # Not wait after finishing step 1
+    description: This task will block for 2s i.e. next task is scheduled to run 2s after this task.
+    duration: 0 
+    parameters:
+      channel: 1
+      output: off
+  - task: DG4202_TOGGLE
+    description: Turn channel 2 on
+    duration: 2 
+    parameters:
+      channel: 1
+      output: off
+  - task: DG4202_TOGGLE
+    description: This task will block for 0s i.e. next task is secheduled to run immediately (if exist) after this task.
+    duration: 0 
     parameters:
       channel: 1
       output: off

@@ -343,8 +343,8 @@ class EDUX1002ADataSource(DataSource):
         try:
             time, voltage = self.device.get_waveform(self.channel)
             return voltage
-        except:
-            return []
+        except Exception as e:
+            raise RuntimeError(f"Error querying EDUX1002A:{e}")
 
 
 class EDUX1002AMockInterface(Interface):
