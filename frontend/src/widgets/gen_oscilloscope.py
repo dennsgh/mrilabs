@@ -16,8 +16,6 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from device.edux1002a import EDUX1002ADetector
-
 
 class OscilloscopeWidget(QWidget):
     def __init__(
@@ -238,7 +236,7 @@ class OscilloscopeWidget(QWidget):
 
     def update_data(self):
         try:
-            self.edux1002a_manager.buffers[self.active_channel].update()
+            self.edux1002a_manager.update_buffer(self.active_channel)
             voltage = self.edux1002a_manager.get_data(self.active_channel)
             time = np.arange(len(voltage))
             self.plot_data[self.active_channel].setData(time, voltage)
@@ -271,7 +269,7 @@ if __name__ == "__main__":
 
     # Here you'd initialize your Interface and EDUX1002A class instances.
     rm = pyvisa.ResourceManager()
-    oscilloscope = EDUX1002ADetector(rm).detect_device()
+    oscilloscope = DeviceDetector(rm).detect_device()
     main_window = OscilloscopeWidget(oscilloscope)
     main_window.show()
 

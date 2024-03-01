@@ -4,22 +4,17 @@ import os
 import time
 from datetime import timedelta
 from pathlib import Path
-from unittest.mock import MagicMock
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import pyvisa
 from filelock import FileLock
 
 # Import classes and modules from device module as needed.
-from device.data import DataBuffer
-from device.device import Device
-from device.dg4202 import DG4202, DG4202DataSource, DG4202Detector, DG4202Mock
-from device.edux1002a import (
-    EDUX1002A,
-    EDUX1002ADataSource,
-    EDUX1002ADetector,
-    EDUX1002AMock,
-)
+from device.data import DataBuffer, DataSource
+from device.device import Device, DeviceDetector, MockDevice
+from device.dg4202 import DG4202, DG4202DataSource, DG4202Mock
+from device.edux1002a import EDUX1002A, EDUX1002ADataSource, EDUX1002AMock
 from utils import logging as logutils
 
 # Setting up basic logging
@@ -67,8 +62,8 @@ class StateManager:
 
 
 class DeviceManagerBase(abc.ABC):
-    device_type = "managed_device"
-    IDN_STRING = "IDN_STRING"
+    device_type = Device
+    device_type_mock = MockDevice
 
     def __init__(
         self,
@@ -77,11 +72,67 @@ class DeviceManagerBase(abc.ABC):
         resource_manager: pyvisa.ResourceManager,
     ):
         self.state_manager = state_manager
-        self.device: Device = None
         self.args_dict = args_dict
         self.rm = resource_manager
-        self._mock_device = MagicMock()
-        self._mock_device.killed = False
+        self.mock_device = self.device_type_mock()
+        self.mock_device.killed = False
+        self.setup_device()
+        self.setup_data()
+
+    def setup_device(self):
+        if self.args_dict.get("hardware_mock", False):
+            self.device = self.mock_device
+        else:
+            self.fetch_hardware()
+
+    def fetch_hardware(self) -> None:
+        """Fetch and update the device driver (hardware, not simulated!)"""
+        self.device: Device = DeviceDetector(
+            resource_manager=self.rm, device_type=self.device_type
+        ).detect_device()
+
+    def setup_data(self):
+        # Will still return a valid dictionary even if self.device is None
+        raise NotImplementedError("Must be implemented in subclasses.")
+        self.data_source = DataSource(self.device)
+
+    def update_last_alive_state(self, last_alive_key: str, alive: bool) -> None:
+        """
+        Updates the 'last_alive' timestamp in the state for the device.
+
+        Parameters:
+            last_alive_key (str): The key in the state dict corresponding to the device's last alive timestamp.
+            alive (bool): Indicates whether the device is considered alive or not.
+        """
+        state = self.state_manager.read_state()
+        if alive:
+            state[last_alive_key] = time.time()
+        else:
+            state[last_alive_key] = None
+        self.state_manager.write_state(state)
+
+    def get_device(self) -> Union[Device, MockDevice, None]:
+        last_alive_key = f"{self.device_type.IDN_STRING}_last_alive"
+
+        # Decide if we should use a mock device or try to fetch a real device.
+        use_mock = self.args_dict.get("hardware_mock", False)
+
+        if use_mock:
+            self.device = self.mock_device if not self.mock_device.killed else None
+        else:
+            self.fetch_hardware()  # This attempts to set `self.device` to a real device.
+        # Determine if the device is considered 'alive'.
+        device_alive = self.device is not None and (
+            not isinstance(self.device, MockDevice) or not self.device.killed
+        )
+
+        # Update the 'last_alive' state accordingly.
+        self.update_last_alive_state(last_alive_key, device_alive)
+        self.setup_data()
+        return self.device
+
+    def set_mock_state(self, state: bool) -> None:
+        self.mock_device.killed = state
 
     def call_device_method(self, method_name: str, *args, **kwargs):
         """
@@ -100,15 +151,15 @@ class DeviceManagerBase(abc.ABC):
                     return method(*args, **kwargs)
                 else:
                     raise AttributeError(
-                        f"{method_name} is not a method of {self.device_type}"
+                        f"{method_name} is not a method of {self.device.IDN_STRING}"
                     )
             except AttributeError as e:
                 logging.error(
-                    f"Method {method_name} not found on device {self.device_type}: {e}"
+                    f"Method {method_name} not found on device {self.device.IDN_STRING}: {e}"
                 )
                 return None
         else:
-            logging.error(f"No device instance available for {self.device_type}")
+            logging.error(f"No device instance available for {self.device.IDN_STRING}")
             return None
 
     def is_device_alive(self) -> bool:
@@ -116,22 +167,21 @@ class DeviceManagerBase(abc.ABC):
             if self.args_dict["hardware_mock"]:
                 return not self.device.killed
             idn = self.device.interface.read("*IDN?")
-            return self.IDN_STRING in idn
+            return self.device.IDN_STRING in idn
         except Exception as e:
             return False
 
-    def get_device(self):
-        raise NotImplementedError("Must be implemented in subclasses.")
-
-    def update_device_state(self):
+    def write_device_state(self) -> None:
         alive = self.is_device_alive()
         if alive:
-            self.state_manager.update_device_last_alive(self.device_type, time.time())
+            self.state_manager.update_device_last_alive(
+                self.device.IDN_STRING, time.time()
+            )
         else:
-            self.state_manager.update_device_last_alive(self.device_type, None)
+            self.state_manager.update_device_last_alive(self.device.IDN_STRING, None)
 
     def get_device_uptime(self) -> str:
-        last_alive = self.state_manager.get_device_last_alive(self.device_type)
+        last_alive = self.state_manager.get_device_last_alive(self.device.IDN_STRING)
         if last_alive:
             uptime_seconds = time.time() - last_alive
             return str(timedelta(seconds=int(uptime_seconds)))
@@ -140,8 +190,8 @@ class DeviceManagerBase(abc.ABC):
 
 
 class DG4202Manager(DeviceManagerBase):
-    device_type = "dg"
-    IDN_STRING = "DG4202"
+    device_type = DG4202
+    device_type_mock = DG4202Mock
 
     def __init__(
         self,
@@ -150,53 +200,18 @@ class DG4202Manager(DeviceManagerBase):
         resource_manager: pyvisa.ResourceManager,
     ):
         super().__init__(state_manager, args_dict, resource_manager)
-        self._mock_device = DG4202Mock()
-        self.data_source = None
-        self._initialize_device()
 
-    def _initialize_device(self):
-        if self.args_dict["hardware_mock"]:
-            self.device: DG4202Mock = self._mock_device
-        else:
-            self.device: DG4202 = DG4202Detector(
-                resource_manager=self.rm
-            ).detect_device()
-
+    def setup_data(self):
+        # Will still return a valid dictionary even if self.device is None
         self.data_source = DG4202DataSource(self.device)
-
-    def get_device(self) -> DG4202:
-        state = self.state_manager.read_state()
-        if self.args_dict["hardware_mock"]:
-            if self._mock_device.killed:
-                state["dg_last_alive"] = None
-                self.state_manager.write_state(state)
-                self.device = None
-            else:
-                if state.get("dg_last_alive") is None:
-                    state["dg_last_alive"] = time.time()
-                self.state_manager.write_state(state)
-                self.device: DG4202Mock = self._mock_device
-        else:
-            self.device: DG4202 = DG4202Detector(
-                resource_manager=self.rm
-            ).detect_device()
-            if self.device is None:
-                state["dg_last_alive"] = None
-            else:
-                if state.get("dg_last_alive") is None:
-                    state["dg_last_alive"] = time.time()
-            self.state_manager.write_state(state)
-        self.data_source = DG4202DataSource(self.device)
-
-        return self.device
 
     def get_data(self) -> dict:
         return self.data_source.query_data()
 
 
 class EDUX1002AManager(DeviceManagerBase):
-    device_type = "edux"
-    IDN_STRING = "EDU-X 1002A"
+    device_type = EDUX1002A
+    device_type_mock = EDUX1002AMock
 
     def __init__(
         self,
@@ -205,19 +220,11 @@ class EDUX1002AManager(DeviceManagerBase):
         resource_manager: pyvisa.ResourceManager,
         buffer_size: int,
     ):
-        super().__init__(state_manager, args_dict, resource_manager)
-        self._mock_device = EDUX1002AMock()
-        self.buffers = {1: None, 2: None}
         self.buffer_size = buffer_size
-        self._initialize_device()
+        super().__init__(state_manager, args_dict, resource_manager)
 
-    def _initialize_device(self):
-        detector = EDUX1002ADetector(resource_manager=self.rm)
-        if self.args_dict["hardware_mock"]:
-            self.device: EDUX1002AMock = self._mock_device
-        else:
-            self.device: EDUX1002A = detector.detect_device()
-        self.buffers = (
+    def setup_data(self):
+        self.data_source = (
             {
                 1: DataBuffer(EDUX1002ADataSource(self.device, 1), self.buffer_size),
                 2: DataBuffer(EDUX1002ADataSource(self.device, 2), self.buffer_size),
@@ -229,28 +236,9 @@ class EDUX1002AManager(DeviceManagerBase):
             }
         )
 
-    def get_device(self) -> EDUX1002A:
-        state = self.state_manager.read_state()
-        if self.args_dict["hardware_mock"]:
-            if self._mock_device.killed:
-                state["edux_last_alive"] = None
-                self.state_manager.write_state(state)
-                self.device = None
-            else:
-                if state.get("edux_last_alive") is None:
-                    state["edux_last_alive"] = time.time()
-                self.state_manager.write_state(state)
-                self.device: EDUX1002AMock = self._mock_device
-        else:
-            self.device = EDUX1002ADetector(resource_manager=self.rm).detect_device()
-            if self.device is None:
-                state["edux_last_alive"] = None
-            else:
-                if state.get("edux_last_alive") is None:
-                    state["edux_last_alive"] = time.time()
-            self.state_manager.write_state(state)
-        self.data_source = EDUX1002ADataSource(self.device)
-        return self.device
+    def update_buffer(self, channel: int) -> None:
+        if self.data_source:
+            self.data_source[channel].update()
 
     def get_data(self, channel: int) -> dict:
-        return self.buffers[channel].get_data() if self.device else None
+        return self.data_source[channel].get_data() if self.device else None

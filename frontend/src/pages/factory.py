@@ -8,7 +8,6 @@ from features.managers import DG4202Manager, EDUX1002AManager, StateManager
 from scheduler.timekeeper import Timekeeper
 from scheduler.worker import Worker
 
-# DG4202_MOCK_DEVICE = DG4202Mock()
 # ======================================================== #
 # =======================File Paths======================= #
 # ======================================================== #

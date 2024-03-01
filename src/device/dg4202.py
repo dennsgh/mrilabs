@@ -1,15 +1,13 @@
-import re
-from typing import List, Optional
+from typing import List
 from unittest.mock import MagicMock
 
-import pyvisa
-
 from device.data import DataSource
-from device.device import Device
-from device.interface import EthernetInterface, Interface, USBInterface
+from device.device import Device, MockDevice
+from device.interface import Interface
 
 
 class DG4202(Device):
+    IDN_STRING = "DG4202"
     FREQ_LIMIT = 2e8
 
     @staticmethod
@@ -345,44 +343,14 @@ class DG4202(Device):
             return False
 
 
-class DG4202Detector:
-    def __init__(self, resource_manager: pyvisa.ResourceManager):
-        self.rm = resource_manager
+class DG4202Mock(MockDevice, DG4202):
+    def __init__(self):
+        # Initialize MockDevice part
+        MockDevice.__init__(self, DG4202MockInterface())
+        # Initialize DG4202 part
+        DG4202.__init__(self, DG4202MockInterface())
+        self.killed = False
 
-    def detect_device(self) -> Optional[DG4202]:
-        """
-        Method that attempts to detect a DG4202 device connected via TCP/IP or USB.
-        Loops through all available resources, attempting to open each one and query its identity.
-        If a DG4202 device is found, it creates and returns a DG4202 instance.
-
-        Returns:
-            DG4202: An instance of the DG4202 class connected to the detected device,
-                    or None if no such device is found.
-        """
-        resources = self.rm.list_resources()
-
-        for resource in resources:
-            if re.match("^TCPIP", resource):
-                try:
-                    device = self.rm.open_resource(resource)
-                    idn = device.query("*IDN?")
-                    if "DG4202" in idn:
-                        return DG4202(EthernetInterface(device))
-                except pyvisa.errors.VisaIOError:
-                    pass
-            elif re.match("^USB", resource):
-                try:
-                    device = self.rm.open_resource(resource)
-                    idn = device.query("*IDN?")
-                    if "DG4202" in idn:
-                        return DG4202(USBInterface(device))
-                except pyvisa.errors.VisaIOError:
-                    pass
-
-        return None
-
-
-class DG4202Mock(DG4202):
     def __init__(self):
         # pass simulated interface
         self.killed = False

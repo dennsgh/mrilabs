@@ -48,7 +48,7 @@ class MockHardwareWidget(QWidget):
             mock_kill = dropdown.currentData()
             device_manager = self.device_managers[device_name]
 
-            # Directly access _mock_device and change its 'killed' state
+            # Directly access mock_device and change its 'killed' state
             if device_manager.args_dict.get("hardware_mock"):
                 print(f"[Settings] {device_name} mock kill {mock_kill}")
-                device_manager._mock_device.killed = mock_kill
+                device_manager.set_mock_state(mock_kill)

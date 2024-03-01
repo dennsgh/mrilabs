@@ -1,16 +1,15 @@
-import re
-from typing import Optional
 from unittest.mock import MagicMock
 
 import numpy as np
-import pyvisa
 
 from device.data import DataSource
-from device.device import Device
-from device.interface import EthernetInterface, Interface, USBInterface
+from device.device import Device, MockDevice
+from device.interface import Interface
 
 
 class EDUX1002A(Device):
+    IDN_STRING = "EDU-X 1002A"
+
     """Keysight EDUX1002A hardware driver/wrapper."""
 
     def __init__(self, interface: Interface, timeout=20000):
@@ -297,43 +296,6 @@ class EDUX1002A(Device):
         self.interface.write(f":ACQuire:COUNt {count}")
 
 
-class EDUX1002ADetector:
-    def __init__(self, resource_manager: pyvisa.ResourceManager):
-        self.rm = resource_manager
-
-    def detect_device(self) -> Optional[EDUX1002A]:
-        """
-        Method that attempts to detect a EDUX1002A device connected via TCP/IP or USB.
-        Loops through all available resources, attempting to open each one and query its identity.
-        If a EDUX1002A device is found, it creates and returns a DG4202 instance.
-
-        Returns:
-            EDUX1002A: An instance of the EDUX1002A class connected to the detected device,
-                    or None if no such device is found.
-        """
-        resources = self.rm.list_resources()
-
-        for resource in resources:
-            if re.match("^TCPIP", resource):
-                try:
-                    device = self.rm.open_resource(resource)
-                    idn = device.query("*IDN?")
-                    if "EDU-X 1002A" in idn:
-                        return EDUX1002A(EthernetInterface(device))
-                except pyvisa.errors.VisaIOError:
-                    pass
-            elif re.match("^USB", resource):
-                try:
-                    device = self.rm.open_resource(resource)
-                    idn = device.query("*IDN?")
-                    if "EDU-X 1002A" in idn:
-                        return EDUX1002A(USBInterface(device))
-                except pyvisa.errors.VisaIOError:
-                    pass
-
-        return None
-
-
 class EDUX1002ADataSource(DataSource):
     def __init__(self, device: EDUX1002A, channel: int = 1):
         super().__init__(device)
@@ -368,10 +330,13 @@ class EDUX1002AMockInterface(Interface):
         return self.state.get(command, self.inst.query(command))
 
 
-class EDUX1002AMock(EDUX1002A):
+class EDUX1002AMock(MockDevice, EDUX1002A):
     def __init__(self, timeout=20000):
         self.killed = False
-        super().__init__(EDUX1002AMockInterface(), timeout)
+        # Initialize MockDevice part
+        MockDevice.__init__(self, EDUX1002AMockInterface())
+        # Initialize EDUX1002A part with the timeout parameter
+        EDUX1002A.__init__(self, EDUX1002AMockInterface(), timeout)
 
     def simulate_kill(self, kill: bool):
         self.killed = kill

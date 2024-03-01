@@ -1,13 +1,16 @@
 import pytest
 import pyvisa
 
-from device.dg4202 import DG4202Detector, EthernetInterface, Interface, USBInterface
+from device.device import DeviceDetector
+from device.dg4202 import DG4202, Interface
 
 
 @pytest.mark.hardware
-def test_DG4202Detector_detect_device():
+def test_DeviceDetector_detect_device():
     rm = pyvisa.ResourceManager()
-    detected_device = DG4202Detector(resource_manager=rm).detect_device()
+    detected_device = DeviceDetector(
+        resource_manager=rm, device_type=DG4202
+    ).detect_device()
 
     # Check that the returned object is not None and of the correct type
     assert detected_device is not None
