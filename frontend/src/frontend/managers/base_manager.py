@@ -1,64 +1,15 @@
 import abc
 import logging
-import os
 import time
 from datetime import timedelta
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Union
 
-import numpy as np
 import pyvisa
-from filelock import FileLock
+from frontend.managers.state_manager import StateManager
 
 # Import classes and modules from device module as needed.
-from device.data import DataBuffer, DataSource
+from device.data import DataSource
 from device.device import Device, DeviceDetector, MockDevice
-from device.dg4202 import DG4202, DG4202DataSource, DG4202Mock
-from device.edux1002a import EDUX1002A, EDUX1002ADataSource, EDUX1002AMock
-from utils import logging as logutils
-
-# Setting up basic logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
-
-
-class StateManager:
-    def __init__(self, json_file: Path = None):
-        self.json_file = json_file or Path(os.getenv("DATA"), "state.json")
-        self.lock_file = self.json_file.with_suffix(".lock")
-        self.data = self.default_state()
-        self.birthdate = time.time()
-
-    def read_state(self) -> dict:
-        with FileLock(self.lock_file, timeout=10):
-            # Utilize the load_json_with_backup utility function with locking
-            self.data = (
-                logutils.load_json_with_backup(self.json_file) or self.default_state()
-            )
-        return self.data
-
-    def write_state(self, state: dict):
-        with FileLock(self.lock_file, timeout=10):
-            self.data.update(state)
-            logutils.save_json(self.data, self.json_file)
-
-    def default_state(self):
-        return {}
-
-    def update_device_last_alive(self, device_type: str, last_alive_time=None):
-        state = self.read_state()
-        key = f"{device_type}_last_alive"
-        state[key] = last_alive_time or time.time()
-        self.write_state(state)
-
-    def get_device_last_alive(self, device_type: str):
-        state = self.read_state()
-        return state.get(f"{device_type}_last_alive")
-
-    def get_uptime(self) -> str:
-        uptime_seconds = time.time() - self.birthdate
-        return str(timedelta(seconds=int(uptime_seconds)))
 
 
 class DeviceManagerBase(abc.ABC):
@@ -187,58 +138,3 @@ class DeviceManagerBase(abc.ABC):
             return str(timedelta(seconds=int(uptime_seconds)))
         else:
             return "N/A"
-
-
-class DG4202Manager(DeviceManagerBase):
-    device_type = DG4202
-    device_type_mock = DG4202Mock
-
-    def __init__(
-        self,
-        state_manager: StateManager,
-        args_dict: dict,
-        resource_manager: pyvisa.ResourceManager,
-    ):
-        super().__init__(state_manager, args_dict, resource_manager)
-
-    def setup_data(self):
-        # Will still return a valid dictionary even if self.device is None
-        self.data_source = DG4202DataSource(self.device)
-
-    def get_data(self) -> dict:
-        return self.data_source.query_data()
-
-
-class EDUX1002AManager(DeviceManagerBase):
-    device_type = EDUX1002A
-    device_type_mock = EDUX1002AMock
-
-    def __init__(
-        self,
-        state_manager: StateManager,
-        args_dict: dict,
-        resource_manager: pyvisa.ResourceManager,
-        buffer_size: int,
-    ):
-        self.buffer_size = buffer_size
-        super().__init__(state_manager, args_dict, resource_manager)
-
-    def setup_data(self):
-        self.data_source = (
-            {
-                1: DataBuffer(EDUX1002ADataSource(self.device, 1), self.buffer_size),
-                2: DataBuffer(EDUX1002ADataSource(self.device, 2), self.buffer_size),
-            }
-            if self.device
-            else {
-                1: None,
-                2: None,
-            }
-        )
-
-    def update_buffer(self, channel: int) -> None:
-        if self.data_source:
-            self.data_source[channel].update()
-
-    def get_data(self, channel: int) -> dict:
-        return self.data_source[channel].get_data() if self.device else None

@@ -1,5 +1,5 @@
-import pages.factory as factory
-from header import VERSION_STRING
+import frontend.pages.factory as factory
+from frontend.header import VERSION_STRING
 from PyQt6.QtWidgets import QLabel, QMessageBox, QPushButton, QVBoxLayout, QWidget
 
 

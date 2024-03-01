@@ -2,20 +2,22 @@ import argparse
 import os
 import signal
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict
 
 import pyvisa
 import qdarktheme
-from features.managers import DG4202Manager, EDUX1002AManager, StateManager
-from features.tasks import get_tasks
-from header import OSCILLOSCOPE_BUFFER_SIZE
-from pages import factory, general, monitor, scheduler, settings
+from frontend.managers.edux1002a import EDUX1002AManager
+from frontend.managers.dg4202 import DG4202Manager
+from frontend.managers.state_manager import StateManager
+from frontend.tasks.tasks import get_tasks
+from frontend.header import OSCILLOSCOPE_BUFFER_SIZE
+from frontend.pages import factory, general, monitor, scheduler, settings
 from PyQt6.QtCore import QLocale
 from PyQt6.QtGui import QGuiApplication, QIcon
 from PyQt6.QtWidgets import QApplication, QStackedWidget, QWidget
-from widgets.menu import MainMenuBar
-from widgets.sidebar import Sidebar
-from widgets.templates import ModularMainWindow
+from frontend.widgets.menu import MainMenuBar
+from frontend.widgets.sidebar import Sidebar
+from frontend.widgets.templates import ModularMainWindow
 
 from scheduler.timekeeper import Timekeeper
 from scheduler.worker import Worker

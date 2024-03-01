@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from header import VERSION_STRING
+from frontend.header import VERSION_STRING
 from PyQt6.QtWidgets import QLabel, QLineEdit, QPushButton, QVBoxLayout, QWidget
 
 

@@ -17,8 +17,10 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: "3.11.5"
-    
-    
+
+    - name: Set environment variables for headless testing
+      run: echo "QT_QPA_PLATFORM=offscreen" >> $GITHUB_ENV
+
     - name: Install system dependencies
       run: sudo apt-get update && sudo apt-get install -y libegl1 libgl1-mesa-dev
 

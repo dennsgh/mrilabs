@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict
 
 from scheduler.worker import Worker
+from utils.logging import create_numbered_backup
 
 
 class Timekeeper:
@@ -161,10 +162,20 @@ class Timekeeper:
         """
         Reloads the function map from the Worker instance.
         """
-        for func_identifier, func_data in self.worker.function_map.function_map.items():
-            func = self.worker.function_map.deserialize_func(func_data)
-            self.worker.register_task(func, func_identifier)
-        self.logger.debug("Function map reloaded.")
+        try:
+            for (
+                func_identifier,
+                func_data,
+            ) in self.worker.function_map.function_map.items():
+                func = self.worker.function_map.deserialize_func(func_data)
+                self.worker.register_task(func, func_identifier)
+            self.logger.debug("Function map reloaded.")
+        except Exception as e:
+            self.logger.error(f"Failed to reload function map: {e}")
+            backup_file = create_numbered_backup(self.persistence_file)
+            self.logger.info(
+                f"Created numbered backup of the function map: {backup_file}"
+            )
 
     def __reschedule_jobs__(self) -> None:
         """

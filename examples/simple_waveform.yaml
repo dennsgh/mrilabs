@@ -1,9 +1,9 @@
-# Duration is the wait time before executing the next step
+# delay is the wait time before executing the next step
 experiment:
   steps:
   - task: DG4202_SET_WAVEFORM
-    description: Turn channel 1 on
-    duration: 5  
+    description: This will run in 5 seconds
+    delay: 5  
     parameters:
       channel: 1
       send_on: true
@@ -12,20 +12,20 @@ experiment:
       frequency: 5 
       offset: 0
   - task: DG4202_TOGGLE
-    description: This task will block for 2s i.e. next task is scheduled to run 2s after this task.
-    duration: 0 
+    description: This will run immediately
+    delay: 0 
     parameters:
       channel: 1
       output: off
   - task: DG4202_TOGGLE
     description: Turn channel 2 on
-    duration: 2 
+    delay: 2 
     parameters:
       channel: 1
       output: off
   - task: DG4202_TOGGLE
-    description: This task will block for 0s i.e. next task is secheduled to run immediately (if exist) after this task.
-    duration: 0 
+    description: This will run immediately
+    delay: 0 
     parameters:
       channel: 1
       output: off

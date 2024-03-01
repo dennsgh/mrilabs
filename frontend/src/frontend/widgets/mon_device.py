@@ -4,7 +4,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict
 
-from features.managers import DeviceManagerBase
+from frontend.managers.base_manager import DeviceManagerBase
 from PyQt6 import QtCore
 from PyQt6.QtCore import QTimer
 from PyQt6.QtWidgets import (

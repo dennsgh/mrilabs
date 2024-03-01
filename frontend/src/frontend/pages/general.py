@@ -1,11 +1,12 @@
 from typing import Callable
 
-from features.managers import DG4202Manager, EDUX1002AManager
-from header import TICK_INTERVAL
-from PyQt6.QtWidgets import QLabel, QTabWidget, QVBoxLayout, QWidget
-from widgets.gen_oscilloscope import OscilloscopeWidget
-from widgets.gen_signal import DG4202DefaultWidget
-from widgets.templates import BasePage
+from frontend.managers.edux1002a import EDUX1002AManager
+from frontend.managers.dg4202 import DG4202Manager
+from frontend.header import TICK_INTERVAL
+from PyQt6.QtWidgets import QLabel,  QVBoxLayout
+from frontend.widgets.gen_oscilloscope import OscilloscopeWidget
+from frontend.widgets.gen_signal import DG4202DefaultWidget
+from frontend.widgets.templates import BasePage
 
 
 class GeneralPage(BasePage):

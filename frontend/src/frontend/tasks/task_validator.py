@@ -2,7 +2,7 @@ import inspect
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-from header import ErrorLevel
+from frontend.header import EXPERIMENT_KEYWORD, ErrorLevel
 
 
 def is_type_compatible(expected_type, value) -> bool:
@@ -195,7 +195,7 @@ def validate_configuration(
 ) -> List[Tuple[str, bool, str, ErrorLevel]]:
     results = []
     for index, step in enumerate(
-        config.get("experiment", {}).get("steps", []), start=1
+        config.get(EXPERIMENT_KEYWORD, {}).get("steps", []), start=1
     ):
         name = step.get("task").upper()
         function_to_validate = get_function_to_validate(name, task_functions, task_enum)

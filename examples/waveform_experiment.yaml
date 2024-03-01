@@ -4,7 +4,7 @@ experiment:
   steps:
   - task: DG4202_SET_WAVEFORM
     description: my description 1
-    wait: 0  # wait in seconds, how long this step should wait before execution
+    delay: 2  # how much to delay in reference to now.
     parameters:
       channel: 1
       send_on: true
@@ -14,7 +14,7 @@ experiment:
       offset: 0
   - task: Set Waveform Parameters 
     description: my description 2
-    wait: 1 # wait is always in reference to the previously defined step!
+    delay: 2 # always in reference to now!
     parameters:
       channel: 1
       send_on: true
@@ -24,7 +24,7 @@ experiment:
       offset: 0
   - task: DG4202_SET_WAVEFORM
     description: my description 3
-    at_time: 0 # at_time is always in reference to now. e.g. wherever you place this does not matter.
+    delay: 4 # delay is always in reference to now. e.g. wherever you place this does not matter.
     parameters:
       channel: 2
       send_on: true
@@ -34,13 +34,13 @@ experiment:
       offset: 0
   - task: DG4202_TOGGLE
     description: turn ch 1 off
-    wait: 0
+    delay: 4
     parameters:
       channel: 1
       output: false
   - task: DG4202_SET_SWEEP
     description: sweep
-    wait: 1
+    delay: 4
     parameters:
       channel: 2
       time: 5
@@ -49,7 +49,7 @@ experiment:
       send_on: true
   - task: DG4202_TOGGLE
     description: turn ch2 off
-    wait: 0
+    delay: 6
     parameters:
       channel: 2
       output: false

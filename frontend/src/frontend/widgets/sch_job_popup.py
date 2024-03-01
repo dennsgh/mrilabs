@@ -2,38 +2,33 @@ from datetime import datetime, timedelta
 from typing import Callable
 
 import yaml
-from features.task_validator import get_task_enum_name, get_task_enum_value, is_in_enum
-from features.tasks import TaskName, get_tasks
-from header import AT_TIME_KEYWORD, WAIT_KEYWORD, TIMESTAMP_KEYWORD
+from frontend.header import TASKS_MISSING, TIMESTAMP_KEYWORD, WAIT_KEYWORD
+from frontend.tasks.task_validator import get_task_enum_name
+from frontend.tasks.tasks import TaskName, get_tasks
+from frontend.widgets.sch_parameters import ParameterConfiguration
 from PyQt6 import QtCore
 from PyQt6.QtWidgets import (
     QComboBox,
     QDialog,
     QDoubleSpinBox,
-    QFileDialog,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
-    QMessageBox,
     QPushButton,
     QSizePolicy,
     QSpinBox,
-    QStackedWidget,
     QTableWidget,
     QTableWidgetItem,
     QTextEdit,
     QVBoxLayout,
     QWidget,
 )
-from widgets.sch_experiments import ExperimentConfiguration
-from widgets.sch_parameters import ParameterConfiguration
 
 from scheduler.timekeeper import Timekeeper
 
 
 class JobConfigPopup(QDialog):
-    NO_TASK_STRING = "No tasks available"
 
     def __init__(self, timekeeper: Timekeeper, callback: Callable):
         super().__init__()
@@ -74,7 +69,7 @@ class JobConfigPopup(QDialog):
         timeConfigGroup = QGroupBox()
         timeConfigLayout = QHBoxLayout(timeConfigGroup)
         self.timeConfigComboBox = QComboBox()
-        self.timeConfigComboBox.addItems([AT_TIME_KEYWORD, TIMESTAMP_KEYWORD])
+        self.timeConfigComboBox.addItems([WAIT_KEYWORD, TIMESTAMP_KEYWORD])
         timeConfigLayout.addWidget(self.timeConfigComboBox)
 
         self.setupTimeConfiguration(timeConfigLayout)
@@ -122,15 +117,15 @@ class JobConfigPopup(QDialog):
 
         if self.timeConfigComboBox.currentText() == TIMESTAMP_KEYWORD:
             schedule_time = self.getDateTimeFromInputs()
-            # Calculate the at_time as the difference between the schedule time and now
-            at_time = schedule_time - now
+            # Calculate the wait as the difference between the schedule time and now
+            wait = schedule_time - now
         else:
-            # Directly use the at_time from the inputs if "at_time" is selected
-            at_time = self.getDateTimeFromInputs() - now
+            # Directly use the wait from the inputs if "wait" is selected
+            wait = self.getDateTimeFromInputs() - now
 
-        # Ensure at_time is always positive before displaying
-        if at_time.total_seconds() < 0:
-            at_time = timedelta(seconds=0)  # Reset to 0 if negative
+        # Ensure wait is always positive before displaying
+        if wait.total_seconds() < 0:
+            wait = timedelta(seconds=0)  # Reset to 0 if negative
 
         config = {
             "experiment": {
@@ -139,7 +134,7 @@ class JobConfigPopup(QDialog):
                         "task": get_task_enum_name(
                             self.taskSelect.currentText(), TaskName
                         ),
-                        AT_TIME_KEYWORD: at_time.total_seconds(),
+                        WAIT_KEYWORD: wait.total_seconds(),
                         "parameters": parameters,
                     }
                 ]
@@ -150,8 +145,8 @@ class JobConfigPopup(QDialog):
 
     def updateTimeConfigurationVisibility(self, selection):
         isTimestamp = selection == TIMESTAMP_KEYWORD
-        TIMESTAMP_KEYWORDWidget.setVisible(isTimestamp)
-        AT_TIME_KEYWORDWidget.setVisible(not isTimestamp)
+        self.timestampWidget.setVisible(isTimestamp)
+        self.waitWidget.setVisible(not isTimestamp)
 
     def updateTaskList(self):
         selected_device = self.deviceSelect.currentText()
@@ -161,7 +156,7 @@ class JobConfigPopup(QDialog):
             self.taskSelect.addItems(tasks)
             self.taskSelect.setCurrentIndex(0)
         else:
-            self.taskSelect.addItem(self.NO_TASK_STRING)
+            self.taskSelect.addItem(TASKS_MISSING)
             self.taskSelect.setCurrentIndex(0)
         self.updateUI()
 
@@ -178,18 +173,18 @@ class JobConfigPopup(QDialog):
 
     def setupTimeConfiguration(self, layout):
         # Create widgets to hold the grid layouts
-        AT_TIME_KEYWORDWidget = QWidget(self)
-        TIMESTAMP_KEYWORDWidget = QWidget(self)
+        self.waitWidget = QWidget(self)
+        self.timestampWidget = QWidget(self)
 
         # Set grid layouts to these widgets
         timestampGridLayout = self.createDateTimeInputs(datetime.now())
-        at_timeGridLayout = self.createat_timeInputs()
-        TIMESTAMP_KEYWORDWidget.setLayout(timestampGridLayout)
-        AT_TIME_KEYWORDWidget.setLayout(at_timeGridLayout)
+        waitGridLayout = self.createwaitInputs()
+        self.timestampWidget.setLayout(timestampGridLayout)
+        self.waitWidget.setLayout(waitGridLayout)
 
         # Add these widgets to the main layout
-        layout.addWidget(TIMESTAMP_KEYWORDWidget)
-        layout.addWidget(AT_TIME_KEYWORDWidget)
+        layout.addWidget(self.timestampWidget)
+        layout.addWidget(self.waitWidget)
 
         self.updateTimeConfigurationVisibility(self.timeConfigComboBox.currentText())
 
@@ -202,7 +197,7 @@ class JobConfigPopup(QDialog):
 
     def createDateTimeInputs(self, default_value):
         gridLayout = QGridLayout()
-        TIMESTAMP_KEYWORDInputs = {}
+        self.timestampInputs = {}
 
         # Define the fields, limits, and their positions in the grid
         fields = [
@@ -230,13 +225,13 @@ class JobConfigPopup(QDialog):
 
             gridLayout.addWidget(label, row, col * 2)
             gridLayout.addWidget(inputWidget, row, col * 2 + 1)
-            TIMESTAMP_KEYWORDInputs[field] = inputWidget
+            self.timestampInputs[field] = inputWidget
 
         return gridLayout
 
-    def createat_timeInputs(self):
+    def createwaitInputs(self):
         gridLayout = QGridLayout()
-        AT_TIME_KEYWORDInputs = {}
+        self.waitInputs = {}
 
         # Define the fields and their positions in the grid
         fields = [
@@ -261,20 +256,20 @@ class JobConfigPopup(QDialog):
 
             gridLayout.addWidget(label, row, col * 2)
             gridLayout.addWidget(inputWidget, row, col * 2 + 1)
-            AT_TIME_KEYWORDInputs[field] = inputWidget
+            self.waitInputs[field] = inputWidget
 
         return gridLayout
 
     def toggleTimeInputs(self):
         # Toggle visibility of time input fields based on selected option
         isTimestamp = bool(self.timeConfigComboBox.currentText() == TIMESTAMP_KEYWORD)
-        for input in TIMESTAMP_KEYWORDInputs:
+        for input in self.timestampInputs:
             input.setVisible(isTimestamp)
-        for input in AT_TIME_KEYWORDInputs:
+        for input in self.waitInputs:
             input.setVisible(not isTimestamp)
 
     def accept(self):
-        # Schedule the task with either timestamp or at_time
+        # Schedule the task with either timestamp or wait
         selected_task = self.taskSelect.currentText()
         schedule_time = self.getDateTimeFromInputs()
         try:
@@ -293,150 +288,28 @@ class JobConfigPopup(QDialog):
     def getDateTimeFromInputs(self):
         if self.timeConfigComboBox.currentText() == TIMESTAMP_KEYWORD:
             # Convert microsecond value to an integer
-            microsecond = int(TIMESTAMP_KEYWORDInputs["millisecond"].value() * 1000)
+            microsecond = int(self.timestampInputs["millisecond"].value() * 1000)
 
             return datetime(
-                year=TIMESTAMP_KEYWORDInputs["year"].value(),
-                month=TIMESTAMP_KEYWORDInputs["month"].value(),
-                day=TIMESTAMP_KEYWORDInputs["day"].value(),
-                hour=TIMESTAMP_KEYWORDInputs["hour"].value(),
-                minute=TIMESTAMP_KEYWORDInputs["minute"].value(),
-                second=TIMESTAMP_KEYWORDInputs["second"].value(),
+                year=self.timestampInputs["year"].value(),
+                month=self.timestampInputs["month"].value(),
+                day=self.timestampInputs["day"].value(),
+                hour=self.timestampInputs["hour"].value(),
+                minute=self.timestampInputs["minute"].value(),
+                second=self.timestampInputs["second"].value(),
                 microsecond=microsecond,
             )
         else:
-            at_time = timedelta(
-                days=AT_TIME_KEYWORDInputs["days"].value(),
-                hours=AT_TIME_KEYWORDInputs["hours"].value(),
-                minutes=AT_TIME_KEYWORDInputs["minutes"].value(),
-                seconds=AT_TIME_KEYWORDInputs["seconds"].value(),
+            wait = timedelta(
+                days=self.waitInputs["days"].value(),
+                hours=self.waitInputs["hours"].value(),
+                minutes=self.waitInputs["minutes"].value(),
+                seconds=self.waitInputs["seconds"].value(),
                 milliseconds=int(
-                    AT_TIME_KEYWORDInputs["milliseconds"].value()
+                    self.waitInputs["milliseconds"].value()
                 ),  # Ensure integer for milliseconds
             )
-            return datetime.now() + at_time
-
-
-class ExperimentConfigPopup(QDialog):
-    def __init__(self, timekeeper: Timekeeper, callback: Callable, parent=None):
-        super().__init__(parent)
-        self.timekeeper = timekeeper
-        self.callback = callback
-        self.task_dict = get_tasks(flatten=True)
-        self.task_enum = TaskName
-        self.experiment_config = ExperimentConfiguration(
-            self, self.task_dict, self.task_enum
-        )
-        self.initUI()
-        self.showDefaultMessage()
-
-    def merge_parameters(self, parameter_list):
-        merged_parameters = {}
-        for parameter_dict in parameter_list:
-            merged_parameters.update(parameter_dict)
-        return merged_parameters
-
-    def initUI(self):
-        self.setWindowTitle("Experiment Scheduler")
-        self.resize(600, 500)
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.layout = QVBoxLayout(self)
-
-        # Use a QStackedWidget to switch between default message and loaded configuration UI
-        self.parametersStack = QStackedWidget(self)
-        self.layout.addWidget(self.parametersStack)
-        self.parametersStack.addWidget(
-            self.experiment_config
-        )  # Add experiment configuration UI
-
-        self.loadConfigButton = QPushButton("Load Configuration", self)
-        self.loadConfigButton.clicked.connect(self.loadConfigurationDialog)
-        self.layout.addWidget(self.loadConfigButton)
-
-        self.runButton = QPushButton("Run Experiment", self)
-        self.runButton.clicked.connect(self.accept)
-        self.runButton.setEnabled(False)  # Disabled until a valid config is loaded
-        self.layout.addWidget(self.runButton)
-
-        self.showDefaultMessage()
-
-    def showDefaultMessage(self):
-        # Show a default message or the experiment configuration UI based on the state
-        if not self.experiment_config.config:  # No config loaded
-            defaultMsgWidget = QLabel(
-                "Please load a configuration file to begin.", self
-            )
-            defaultMsgWidget.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-            self.parametersStack.addWidget(defaultMsgWidget)
-            self.parametersStack.setCurrentWidget(defaultMsgWidget)
-        else:  # Config loaded
-            self.parametersStack.setCurrentWidget(self.experiment_config)
-
-    def loadConfigurationDialog(self):
-        fileName, _ = QFileDialog.getOpenFileName(
-            self, "Load Configuration File", "", "YAML Files (*.yaml);;All Files (*)"
-        )
-        if fileName:
-            self.loadConfiguration(fileName)
-
-    def loadConfiguration(self, config_path):
-        # Load and validate configuration, then switch to the configuration UI
-        try:
-            valid, message = self.experiment_config.loadConfiguration(config_path)
-            self.runButton.setEnabled(valid)
-            if valid:
-                self.parametersStack.setCurrentWidget(self.experiment_config)
-            else:
-                QMessageBox.warning(self, "Configuration Validation Failed", message)
-                self.showDefaultMessage()
-        except Exception as e:
-            QMessageBox.critical(
-                self,
-                "Configuration Load Failed",
-                f"Failed to load configuration: {str(e)}",
-            )
-            self.showDefaultMessage()
-
-    def accept(self):
-        """
-        Commits the experiment configuration to schedule tasks based on the user's input.
-        """
-        steps = (
-            self.experiment_config.getConfiguration()
-            .get("experiment", {})
-            .get("steps", [])
-        )
-        wait = timedelta(seconds=0)
-        at_time = timedelta(seconds=0)
-
-        for step in steps:
-            task_str: str = step.get("task")
-            parameters = step.get("parameters", {})
-            task_name_str = get_task_enum_value(task_str, self.task_enum)
-            # Assuming 'TaskName' can resolve both names and values to an Enum member
-            if not is_in_enum(task_str.strip(), self.task_enum):
-                QMessageBox.critical(
-                    self, "Error Scheduling Task", f"Unknown task: '{task_name_str}'"
-                )
-                return
-            schedule_time = datetime.now() + at_time + wait
-            try:
-                # Schedule the task with timekeeper
-                self.timekeeper.add_job(task_name_str, schedule_time, kwargs=parameters)
-            except Exception as e:
-                QMessageBox.critical(
-                    self,
-                    "Error Scheduling Task",
-                    f"Failed to schedule '{task_name_str}': {e}",
-                )
-                return  # Stop scheduling further tasks on error
-
-            # Update total at_time with the at_time of the current step
-            step_at_time = timedelta(seconds=step.get("at_time", 0))
-            at_time += step_at_time
-
-        self.callback()  # Trigger any post-scheduling actions
-        super().accept()
+            return datetime.now() + wait
 
 
 class JobDetailsDialog(QDialog):

@@ -1,9 +1,9 @@
 from datetime import datetime
 
 import pyqtgraph as pg
-from features.managers import DG4202Manager
-from header import NOT_FOUND_STRING
-from pages import plotter
+from frontend.managers.dg4202 import DG4202Manager
+from frontend.header import NOT_FOUND_STRING
+from frontend.pages import plotter
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QComboBox,

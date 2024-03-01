@@ -1,10 +1,10 @@
 import sys
 
-import header
+import frontend.header as header
 import numpy as np
 import pyqtgraph as pg
-from features.managers import EDUX1002AManager
-from header import TICK_INTERVAL
+from frontend.header import TICK_INTERVAL
+from frontend.managers.edux1002a import EDUX1002AManager
 from PyQt6.QtWidgets import (
     QApplication,
     QDoubleSpinBox,

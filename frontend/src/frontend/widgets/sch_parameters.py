@@ -2,7 +2,7 @@ import inspect
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from PyQt6.QtWidgets import QHBoxLayout, QLabel, QStackedWidget, QVBoxLayout, QWidget
-from widgets.ui_factory import (  # Assuming custom import, details unknown
+from frontend.widgets.ui_factory import (  # Assuming custom import, details unknown
     UIComponentFactory,
 )
 

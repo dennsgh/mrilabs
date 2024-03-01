@@ -3,7 +3,9 @@ import time
 from pathlib import Path
 
 import pyvisa
-from features.managers import DG4202Manager, EDUX1002AManager, StateManager
+from frontend.managers.edux1002a import EDUX1002AManager
+from frontend.managers.dg4202 import DG4202Manager
+from frontend.managers.state_manager import StateManager
 
 from scheduler.timekeeper import Timekeeper
 from scheduler.worker import Worker

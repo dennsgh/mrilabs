@@ -1,6 +1,6 @@
 from typing import Dict
 
-from features.managers import DeviceManagerBase
+from frontend.managers.base_manager import DeviceManagerBase
 from PyQt6.QtWidgets import (
     QComboBox,
     QHBoxLayout,

@@ -1,6 +1,6 @@
 from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtWidgets import QFileDialog, QMenu, QMenuBar, QMessageBox
-from widgets.windows import DeviceWindow, VersionWindow
+from frontend.widgets.windows import DeviceWindow, VersionWindow
 
 
 class MainMenuBar(QMenuBar):

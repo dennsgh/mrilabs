@@ -3,12 +3,15 @@ from enum import Enum
 from typing import Callable
 
 import yaml
-from features.task_validator import (
+from frontend.header import DELAY_KEYWORD, EXPERIMENT_KEYWORD, ErrorLevel
+from frontend.tasks.model import Experiment, Task
+from frontend.tasks.task_validator import (
     get_function_to_validate,
     get_task_enum_value,
     validate_configuration,
 )
-from header import AT_TIME_KEYWORD, WAIT_KEYWORD, ErrorLevel
+from frontend.widgets.ui_factory import UIComponentFactory
+from pydantic import ValidationError
 from PyQt6.QtWidgets import (
     QFormLayout,
     QHBoxLayout,
@@ -21,7 +24,6 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from widgets.ui_factory import UIComponentFactory
 
 
 class ExperimentConfiguration(QWidget):
@@ -107,10 +109,13 @@ class ExperimentConfiguration(QWidget):
 
     def updateYamlDisplay(self):
         # Automatically grab the current tab index if needed or work with the updated_config
+
         currentTabIndex = self.tabWidget.currentIndex()
         if currentTabIndex != -1:
             self.getUserData()  # Ensure the updated_config is current
-            step_config = self.updated_config["experiment"]["steps"][currentTabIndex]
+            step_config = self.updated_config[EXPERIMENT_KEYWORD]["steps"][
+                currentTabIndex
+            ]
             yamlStr = yaml.dump(step_config, sort_keys=False)
             self.yamlDisplayWidget.setText(yamlStr)
 
@@ -220,7 +225,7 @@ class ExperimentConfiguration(QWidget):
             return
 
         self.tabWidget.clear()
-        steps = self.config.get("experiment", {}).get("steps", [])
+        steps = self.config.get(EXPERIMENT_KEYWORD, {}).get("steps", [])
         if steps:
             for index, step in enumerate(steps, start=1):
                 valid, err = self.createTaskTab(step)
@@ -247,20 +252,14 @@ class ExperimentConfiguration(QWidget):
         formWidget = QWidget()
         formLayout = QFormLayout()
 
-        at_time = task.get(AT_TIME_KEYWORD, 0.0)
-        duration = task.get(WAIT_KEYWORD, 0.0)
-        durationWidget = UIComponentFactory.create_widget(
-            WAIT_KEYWORD, duration, float, None, self.updateYamlDisplay
+        delay = task.get(DELAY_KEYWORD, 0.0)
+        waitWidget = UIComponentFactory.create_widget(
+            DELAY_KEYWORD, delay, float, None, self.updateYamlDisplay
         )
-        atTimeWidget = UIComponentFactory.create_widget(
-            AT_TIME_KEYWORD, at_time, float, None, self.updateYamlDisplay
-        )
-        durationWidget.setSizePolicy(
+        waitWidget.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
         )
-        formLayout.addRow(QLabel(f"{WAIT_KEYWORD} (s):"), durationWidget)
-        formLayout.addRow(QLabel(f"{AT_TIME_KEYWORD} (s):"), atTimeWidget)
-
+        formLayout.addRow(QLabel(f"{DELAY_KEYWORD} (s):"), waitWidget)
         formWidget.setLayout(formLayout)
         try:
             task_function = self.get_function(task.get("task"))
@@ -326,32 +325,41 @@ class ExperimentConfiguration(QWidget):
             return False, f"{e}"
 
     def getUserData(self) -> dict:
+        if (
+            not self.config
+            or EXPERIMENT_KEYWORD not in self.config
+            or "steps" not in self.config[EXPERIMENT_KEYWORD]
+        ):
+            QMessageBox.warning(self, "Error", "No valid configuration loaded.")
+            return {}
+
         if self.updated_config is None:
             self.updated_config = {
-                "experiment": {
-                    "name": self.config.get("experiment", {}).get(
+                EXPERIMENT_KEYWORD: {
+                    "name": self.config.get(EXPERIMENT_KEYWORD, {}).get(
                         "name", "Unnamed Experiment"
                     ),
                     "steps": [],
                 }
             }
 
-        self.updated_config["experiment"][
+        self.updated_config[EXPERIMENT_KEYWORD][
             "steps"
         ].clear()  # Clear existing steps to repopulate
 
+        steps = []
         for index in range(self.tabWidget.count()):
             step_widget = self.tabWidget.widget(index)
             form_widget = step_widget.findChild(QScrollArea).widget()
             form_layout = form_widget.layout()
 
-            original_step: dict = self.config["experiment"]["steps"][index]
-            updated_step = original_step.copy()
-            updated_parameters = {}
+            original_step = self.config[EXPERIMENT_KEYWORD]["steps"][index]
+            parameters = {}
 
-            duration_updated = False
-            at_time_updated = False
+            # Initialize delay_seconds and at_time with None, update if found
+            delay = 0
 
+            # Extract parameters from form
             for i in range(form_layout.rowCount()):
                 widget_item = form_layout.itemAt(i, QFormLayout.ItemRole.FieldRole)
                 if widget_item is not None:
@@ -359,24 +367,42 @@ class ExperimentConfiguration(QWidget):
                     parameter_name = widget.property("parameter_name")
                     if parameter_name:
                         param_value = UIComponentFactory.extract_value(widget)
-                        if parameter_name == WAIT_KEYWORD:
-                            updated_step[WAIT_KEYWORD] = param_value
-                            duration_updated = True
+                        if parameter_name == DELAY_KEYWORD:
+                            delay = param_value
                         else:
-                            updated_parameters[parameter_name] = param_value
-                            param_value = UIComponentFactory.extract_value(widget)
-                        if parameter_name == AT_TIME_KEYWORD:
-                            updated_step[WAIT_KEYWORD] = param_value
-                            at_time_updated = True
-                        else:
-                            updated_parameters[parameter_name] = param_value
+                            parameters[parameter_name] = param_value
 
-            if not duration_updated:
-                updated_step[WAIT_KEYWORD] = 0  # Default duration if not specified
-            if not at_time_updated:
-                updated_step[AT_TIME_KEYWORD] = 0  # Default duration if not specified
-            updated_step["parameters"] = updated_parameters
-            self.updated_config["experiment"]["steps"].append(updated_step)
+            # Create a Task instance, incorporating validation
+            try:
+                task = Task(
+                    task=original_step.get("task"),
+                    description=original_step.get("description"),
+                    delay=delay,
+                    parameters=parameters,
+                )
+                steps.append(
+                    task.dict()
+                )  # Convert Pydantic model to dict for the final configuration
+            except ValidationError as e:
+                # Handle validation errors (e.g., show a message to the user)
+                print(f"Validation error in step {index}: {e}")
+
+        # Create the Experiment instance
+        try:
+            experiment = Experiment(
+                name=self.config.get(EXPERIMENT_KEYWORD, {}).get(
+                    "name", "Unnamed Experiment"
+                ),
+                steps=steps,
+            )
+            # Convert the entire Experiment model to dict
+            self.updated_config = {EXPERIMENT_KEYWORD: experiment.dict()}
+        except ValidationError as e:
+            # Handle validation errors for the experiment
+            print(f"Validation error in experiment configuration: {e}")
+            self.updated_config = {}
+            
+            return 
 
     def getConfiguration(self) -> dict:
         """
@@ -419,10 +445,10 @@ class ExperimentConfiguration(QWidget):
         return get_function_to_validate(task, self.task_functions, self.task_enum)
 
     def generate_experiment_summary(self, data: dict):
-        if not data or "experiment" not in data:
+        if not data or EXPERIMENT_KEYWORD not in data:
             return "No experiment configuration loaded."
 
-        experiment_data = data["experiment"]
+        experiment_data = data[EXPERIMENT_KEYWORD]
         experiment_name = experiment_data.get("name", "Unnamed Experiment")
         steps = experiment_data.get("steps", [])
 

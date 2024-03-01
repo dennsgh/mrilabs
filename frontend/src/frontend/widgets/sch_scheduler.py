@@ -1,7 +1,9 @@
 import json
 from typing import Callable
 
-from pages import factory
+from frontend.pages import factory
+from frontend.widgets.sch_exp_popup import ExperimentConfigPopup
+from frontend.widgets.sch_job_popup import JobConfigPopup, JobDetailsDialog
 from PyQt6 import QtCore
 from PyQt6.QtWidgets import (
     QHeaderView,
@@ -14,7 +16,6 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from widgets.sch_popups import ExperimentConfigPopup, JobConfigPopup, JobDetailsDialog
 
 from scheduler.timekeeper import Timekeeper
 from utils import logging as logutils

@@ -2,11 +2,11 @@ import os
 from pathlib import Path
 from typing import Callable, Dict
 
-from features.managers import DeviceManagerBase
+from frontend.managers.base_manager import DeviceManagerBase
 from PyQt6.QtWidgets import QVBoxLayout
-from widgets.set_mock import MockHardwareWidget
-from widgets.set_state import SettingsStateWidget
-from widgets.templates import BasePage
+from frontend.widgets.set_mock import MockHardwareWidget
+from frontend.widgets.set_state import SettingsStateWidget
+from frontend.widgets.templates import BasePage
 
 
 class SettingsPage(BasePage):

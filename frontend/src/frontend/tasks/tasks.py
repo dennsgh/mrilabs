@@ -1,8 +1,8 @@
 from enum import Enum
 
-from tasks.task_decorator import parameter_annotations, parameter_constraints
-from header import DeviceName
-from pages import factory
+from frontend.tasks.task_decorator import parameter_annotations, parameter_constraints
+from frontend.header import DeviceName
+from frontend.pages import factory
 from datetime import datetime, timedelta
 
 from device.dg4202 import DG4202

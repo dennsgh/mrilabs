@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QVBoxLayout
-from widgets.templates import BasePage
-from widgets.mon_device import DeviceMonitorWidget  # Assuming this is the path
+from frontend.widgets.templates import BasePage
+from frontend.widgets.mon_device import DeviceMonitorWidget  # Assuming this is the path
 from typing import Callable
 from pathlib import Path
 
