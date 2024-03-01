@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 from PyQt6.QtWidgets import (
     QApplication,
@@ -11,10 +13,13 @@ from widgets.ui_factory import UIComponentFactory
 
 
 class TestUIComponentFactory:
-    @pytest.fixture(autouse=True)
-    def setup_qapp(self):
-        # Initialize QApplication to create widgets
-        self.app = QApplication([])
+    @app.fixture(autouse=True, scope="session")
+    def setup_qapp():
+        app = QApplication.instance()
+        if not app:
+            app = QApplication(sys.argv)
+        yield app
+        app.quit()
 
     # Test Cases for extract_value
     def test_extract_value_from_line_edit(self):
