@@ -1,72 +1,60 @@
 from unittest.mock import Mock, patch
 
-import pyvisa
-
-from device.device import DeviceDetector
-from device.dg4202 import DG4202
+from device.device import Device, DeviceDetector
+from device.interface import EthernetInterface, USBInterface
 
 
-def test_detect_device_with_tcpip_resource():
-    # Mock the ResourceManager from pyvisa and the methods we're going to use.
-    mock_rm = Mock()
+class GenericDevice(Device):
+    IDN_STRING = "Generic Device ID"
+
+
+@patch("pyvisa.ResourceManager", return_value=Mock())
+def test_detect_device_with_tcpip_resource(mock_resource_manager):
+    mock_rm = mock_resource_manager.return_value
     mock_device = Mock()
-    mock_resource_string = "TCPIP0::192.168.1.100::INSTR"
-    mock_device.resource_name = mock_resource_string
 
-    # Simulate a device response which contains the identifier "DG4202".
-    mock_device.query.return_value = "Some info DG4202 More info"
+    # Correctly set up the resource_name attribute on the mock_device
+    mock_device.resource_name = "TCPIP0::192.168.1.100::INSTR"
+    mock_device.query.return_value = "Manufacturer,Generic Device ID,Serial,Version"
 
-    # Simulate a device resource list that contains a USB resource.
-    mock_rm.list_resources.return_value = [mock_resource_string]
-
-    # Return our mock device when trying to open the resource.
+    # Simulate a device resource list that includes a TCPIP resource
+    mock_rm.list_resources.return_value = [mock_device.resource_name]
     mock_rm.open_resource.return_value = mock_device
-    # Patch the pyvisa ResourceManager to use our mocked version.
-    with patch("device.dg4202.pyvisa.ResourceManager", return_value=mock_rm):
-        result = DeviceDetector(pyvisa.ResourceManager()).detect_device()
 
-    # Ensure the result is an instance of the DG4202 class.
-    assert isinstance(result, DG4202)
+    detector = DeviceDetector(mock_rm, GenericDevice)
+    result = detector.detect_device()
+
+    # Ensure the result is an instance of GenericDevice with an EthernetInterface
+    assert isinstance(result, GenericDevice)
+    assert isinstance(result.interface, EthernetInterface)
 
 
-def test_detect_device_with_usb_resource():
-    """
-    Test if the DeviceDetector can correctly detect a DG4202 device connected via USB.
-    """
-    # Mock the ResourceManager from pyvisa and the methods we're going to use.
-    mock_rm = Mock()
+@patch("pyvisa.ResourceManager", return_value=Mock())
+def test_detect_device_with_usb_resource(mock_resource_manager):
+    mock_rm = mock_resource_manager.return_value
     mock_device = Mock()
+    mock_device.query.return_value = "Manufacturer,Generic Device ID,Serial,Version"
 
-    # Simulate a device response which contains the identifier "DG4202".
-    mock_device.query.return_value = "Some info DG4202 More info"
-
-    # Simulate a device resource list that contains a USB resource.
+    # Simulate a device resource list that includes a USB resource
     mock_rm.list_resources.return_value = ["USB0::0x1234::0x5678::SN12345::0::INSTR"]
-
-    # Return our mock device when trying to open the resource.
     mock_rm.open_resource.return_value = mock_device
 
-    # Patch the pyvisa ResourceManager to use our mocked version.
-    with patch("device.dg4202.pyvisa.ResourceManager", return_value=mock_rm):
-        result = DeviceDetector(pyvisa.ResourceManager()).detect_device()
+    detector = DeviceDetector(mock_rm, GenericDevice)
+    result = detector.detect_device()
 
-    # Ensure the result is an instance of the DG4202 class.
-    assert isinstance(result, DG4202)
+    # Ensure the result is an instance of GenericDevice with a USBInterface
+    assert isinstance(result, GenericDevice)
+    assert isinstance(result.interface, USBInterface)
 
 
-def test_detect_device_with_no_device():
-    """
-    Test the scenario where no DG4202 device is detected.
-    """
-    # Mock the ResourceManager from pyvisa.
-    mock_rm = Mock()
-
-    # Simulate an empty resource list (i.e., no devices detected).
+@patch("pyvisa.ResourceManager", return_value=Mock())
+def test_detect_device_with_no_device(mock_resource_manager):
+    mock_rm = mock_resource_manager.return_value
+    # Simulate an empty resource list (i.e., no devices detected)
     mock_rm.list_resources.return_value = []
 
-    # Patch the pyvisa ResourceManager to use our mocked version.
-    with patch("device.dg4202.pyvisa.ResourceManager", return_value=mock_rm):
-        result = DeviceDetector(pyvisa.ResourceManager()).detect_device()
+    detector = DeviceDetector(mock_rm, GenericDevice)
+    result = detector.detect_device()
 
-    # Ensure that the detection result is None when no devices are found.
+    # Ensure that the detection result is None when no devices are found
     assert result is None
