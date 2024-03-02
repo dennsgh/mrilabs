@@ -12,7 +12,7 @@ from device.data import DataSource
 from device.device import Device, DeviceDetector, MockDevice
 
 
-class DeviceManagerBase(abc.ABC):
+class DeviceManager(abc.ABC):
     device_type = Device
     device_type_mock = MockDevice
 

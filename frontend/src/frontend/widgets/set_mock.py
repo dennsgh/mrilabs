@@ -1,6 +1,6 @@
 from typing import Dict
 
-from frontend.managers.base_manager import DeviceManagerBase
+from frontend.managers.base_manager import DeviceManager
 from PyQt6.QtWidgets import (
     QComboBox,
     QHBoxLayout,
@@ -12,9 +12,9 @@ from PyQt6.QtWidgets import (
 
 
 class MockHardwareWidget(QWidget):
-    def __init__(self, device_managers: Dict[str, DeviceManagerBase], parent=None):
+    def __init__(self, device_managers: Dict[str, DeviceManager], parent=None):
         super().__init__(parent)
-        self.device_managers: Dict[str, DeviceManagerBase] = device_managers
+        self.device_managers: Dict[str, DeviceManager] = device_managers
         self.initUI()
 
     def initUI(self):

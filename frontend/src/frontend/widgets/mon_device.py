@@ -4,7 +4,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict
 
-from frontend.managers.base_manager import DeviceManagerBase
+from frontend.managers.base_manager import DeviceManager
 from PyQt6 import QtCore
 from PyQt6.QtCore import QTimer
 from PyQt6.QtWidgets import (
@@ -26,7 +26,7 @@ from utils import logging as logutils
 class DeviceMonitorWidget(QWidget):
     def __init__(
         self,
-        device_managers: Dict[str, DeviceManagerBase],
+        device_managers: Dict[str, DeviceManager],
         monitor_logs: Path = None,
         parent=None,
     ):
@@ -128,9 +128,7 @@ class DeviceMonitorWidget(QWidget):
         for row, (device_name, manager) in enumerate(self.device_managers.items()):
             self.update_device_status(device_name, manager, row)
 
-    def update_device_status(
-        self, device_name: str, manager: DeviceManagerBase, row: int
-    ):
+    def update_device_status(self, device_name: str, manager: DeviceManager, row: int):
         is_alive = manager.is_device_alive()
         if is_alive and self.device_statuses[device_name] != is_alive:
             self.log_event(f"{device_name} Connected")

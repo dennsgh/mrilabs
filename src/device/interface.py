@@ -1,9 +1,8 @@
 import abc
-
-import pyvisa
+from datetime import datetime
 from typing import Optional
 
-from datetime import datetime
+import pyvisa
 
 
 class Interface(abc.ABC):
@@ -57,7 +56,7 @@ class EthernetInterface(Interface):
 class USBInterface(Interface):
 
     def __init__(self, resource: pyvisa.Resource):
-        self.usb_address = resource  # You can further parse the resource string if needed
+        self.usb_address = resource
         super().__init__(resource, address=self.usb_address)
 
     def write(self, command: str) -> None:

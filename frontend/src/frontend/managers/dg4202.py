@@ -1,11 +1,12 @@
 import pyvisa
+from frontend.managers.base_manager import DeviceManager
 from frontend.managers.state_manager import StateManager
+
 # Import classes and modules from device module as needed.
 from device.dg4202 import DG4202, DG4202DataSource, DG4202Mock
-from frontend.managers.base_manager import DeviceManagerBase
 
 
-class DG4202Manager(DeviceManagerBase):
+class DG4202Manager(DeviceManager):
     device_type = DG4202
     device_type_mock = DG4202Mock
 

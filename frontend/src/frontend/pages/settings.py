@@ -2,17 +2,17 @@ import os
 from pathlib import Path
 from typing import Callable, Dict
 
-from frontend.managers.base_manager import DeviceManagerBase
-from PyQt6.QtWidgets import QVBoxLayout
+from frontend.managers.base_manager import DeviceManager
 from frontend.widgets.set_mock import MockHardwareWidget
 from frontend.widgets.set_state import SettingsStateWidget
 from frontend.widgets.templates import BasePage
+from PyQt6.QtWidgets import QVBoxLayout
 
 
 class SettingsPage(BasePage):
     def __init__(
         self,
-        device_managers: Dict[str, DeviceManagerBase] = None,
+        device_managers: Dict[str, DeviceManager] = None,
         parent=None,
         args_dict: dict = None,
         root_callback: Callable = None,

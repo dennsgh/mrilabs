@@ -1,13 +1,14 @@
-
 import pyvisa
+from frontend.managers.base_manager import DeviceManager
+from frontend.managers.state_manager import StateManager
+
+from device.data import DataBuffer
 
 # Import classes and modules from device module as needed.
 from device.edux1002a import EDUX1002A, EDUX1002ADataSource, EDUX1002AMock
-from frontend.managers.state_manager import StateManager
-from device.data import DataBuffer
-from frontend.managers.base_manager import DeviceManagerBase
 
-class EDUX1002AManager(DeviceManagerBase):
+
+class EDUX1002AManager(DeviceManager):
     device_type = EDUX1002A
     device_type_mock = EDUX1002AMock
 
