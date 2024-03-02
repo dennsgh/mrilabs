@@ -1,5 +1,5 @@
 import pyvisa
-from frontend.managers.base_manager import DeviceManager
+from frontend.managers.device import DeviceManager
 from frontend.managers.state_manager import StateManager
 
 # Import classes and modules from device module as needed.

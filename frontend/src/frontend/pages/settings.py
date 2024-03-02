@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from typing import Callable, Dict
 
-from frontend.managers.base_manager import DeviceManager
+from frontend.managers.device import DeviceManager
 from frontend.widgets.set_mock import MockHardwareWidget
 from frontend.widgets.set_state import SettingsStateWidget
 from frontend.widgets.templates import BasePage

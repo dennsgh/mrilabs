@@ -3,15 +3,16 @@ import os
 import time
 from datetime import timedelta
 from pathlib import Path
+
 from filelock import FileLock
+
 from utils import logging as logutils
-
-
 
 # Setting up basic logging
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
+
 
 class StateManager:
     def __init__(self, json_file: Path = None):
@@ -19,6 +20,12 @@ class StateManager:
         self.lock_file = self.json_file.with_suffix(".lock")
         self.data = self.default_state()
         self.birthdate = time.time()
+
+    def sanitize_key(self, key: str) -> str:
+        """
+        Sanitize the key by stripping leading and trailing spaces and replacing spaces with underscores.
+        """
+        return key.strip().replace(" ", "_")
 
     def read_state(self) -> dict:
         with FileLock(self.lock_file, timeout=10):
@@ -38,14 +45,15 @@ class StateManager:
 
     def update_device_last_alive(self, device_type: str, last_alive_time=None):
         state = self.read_state()
-        key = f"{device_type}_last_alive"
-        state[key] = last_alive_time or time.time()
+        sanitized_key = self.sanitize_key(f"{device_type}_last_alive")
+        state[sanitized_key] = last_alive_time or time.time()
         self.write_state(state)
 
     def get_device_last_alive(self, device_type: str):
         state = self.read_state()
-        return state.get(f"{device_type}_last_alive")
+        sanitized_key = self.sanitize_key(f"{device_type}_last_alive")
+        return state.get(sanitized_key)
 
-    def get_uptime(self) -> str:
+    def get_uptime(self) -> timedelta:
         uptime_seconds = time.time() - self.birthdate
-        return str(timedelta(seconds=int(uptime_seconds)))
+        return timedelta(seconds=int(uptime_seconds))

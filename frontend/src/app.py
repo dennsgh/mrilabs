@@ -6,18 +6,18 @@ from typing import Dict
 
 import pyvisa
 import qdarktheme
-from frontend.managers.edux1002a import EDUX1002AManager
-from frontend.managers.dg4202 import DG4202Manager
-from frontend.managers.state_manager import StateManager
-from frontend.tasks.tasks import get_tasks
 from frontend.header import OSCILLOSCOPE_BUFFER_SIZE
+from frontend.managers.dg4202 import DG4202Manager
+from frontend.managers.edux1002a import EDUX1002AManager
+from frontend.managers.state_manager import StateManager
 from frontend.pages import factory, general, monitor, scheduler, settings
-from PyQt6.QtCore import QLocale
-from PyQt6.QtGui import QGuiApplication, QIcon
-from PyQt6.QtWidgets import QApplication, QStackedWidget, QWidget
+from frontend.tasks.tasks import get_tasks
 from frontend.widgets.menu import MainMenuBar
 from frontend.widgets.sidebar import Sidebar
 from frontend.widgets.templates import ModularMainWindow
+from PyQt6.QtCore import QLocale
+from PyQt6.QtGui import QGuiApplication, QIcon
+from PyQt6.QtWidgets import QApplication, QStackedWidget, QWidget
 
 from scheduler.timekeeper import Timekeeper
 from scheduler.worker import Worker
@@ -56,8 +56,6 @@ def init_objects(args_dict: dict):
         worker_instance=factory.worker,
         logfile=factory.TIMEKEEPER_LOGS,
     )
-
-    factory.state_manager.write_state({"dg_last_alive": None})
 
     for _, task_dict in get_tasks().items():
         for task_name, func_pointer in task_dict.items():

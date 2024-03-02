@@ -30,9 +30,9 @@ class DeviceManager(abc.ABC):
         self.setup_device()
         self.setup_data()
 
-    def setup_device(self):
+    def setup_device(self) -> None:
         if self.args_dict.get("hardware_mock", False):
-            self.device = self.mock_device
+            self.fetch_mock_hardware()
         else:
             self.fetch_hardware()
 
@@ -42,10 +42,14 @@ class DeviceManager(abc.ABC):
             resource_manager=self.rm, device_type=self.device_type
         ).detect_device()
 
+    def fetch_mock_hardware(self) -> None:
+        """Fetch and update the device driver (hardware, not simulated!)"""
+        self.device: MockDevice = self.mock_device
+
     def setup_data(self):
         # Will still return a valid dictionary even if self.device is None
-        raise NotImplementedError("Must be implemented in subclasses.")
         self.data_source = DataSource(self.device)
+        raise NotImplementedError("Must be implemented in subclasses.")
 
     def update_last_alive_state(self, last_alive_key: str, alive: bool) -> None:
         """
@@ -138,3 +142,18 @@ class DeviceManager(abc.ABC):
             return str(timedelta(seconds=int(uptime_seconds)))
         else:
             return "N/A"
+
+
+class DataSourceFactory:
+    _registry = {}
+
+    @classmethod
+    def register(cls, device_type, data_source_type):
+        cls._registry[device_type] = data_source_type
+
+    @classmethod
+    def create_data_source(cls, device, *args, **kwargs):
+        data_source_type = cls._registry.get(type(device))
+        if data_source_type:
+            return data_source_type(device, *args, **kwargs)
+        raise ValueError(f"No data source registered for device type {type(device)}")
