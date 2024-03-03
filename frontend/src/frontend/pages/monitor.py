@@ -5,6 +5,7 @@ from typing import Callable
 from pathlib import Path
 
 class MonitorPage(BasePage):
+    PAGE_NAME = "Monitor"
     def __init__(self, device_managers: dict, parent=None, args_dict: dict = None, monitor_logs:Path = None, root_callback: Callable = None):
         super().__init__(parent=parent, args_dict=args_dict, root_callback=root_callback)
         self.device_managers = device_managers

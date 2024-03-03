@@ -8,6 +8,7 @@ from scheduler.timekeeper import Timekeeper
 from frontend.widgets.templates import BasePage
 
 class SchedulerPage(BasePage):
+    PAGE_NAME = "Scheduling"
     def __init__(
         self,
         timekeeper: Timekeeper = None,

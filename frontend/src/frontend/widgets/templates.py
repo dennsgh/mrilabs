@@ -13,6 +13,8 @@ from PyQt6.QtWidgets import (
 
 
 class BasePage(QWidget):
+    PAGE_NAME = "Page Name"
+
     def __init__(
         self,
         parent=None,

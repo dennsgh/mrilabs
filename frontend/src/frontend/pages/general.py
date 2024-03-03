@@ -10,6 +10,8 @@ from PyQt6.QtWidgets import QLabel, QVBoxLayout
 
 
 class GeneralPage(BasePage):
+    PAGE_NAME = "General"
+
     def __init__(
         self,
         dg4202_manager: DG4202Manager,

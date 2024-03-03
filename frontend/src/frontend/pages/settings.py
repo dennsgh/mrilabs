@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import QVBoxLayout
 
 
 class SettingsPage(BasePage):
+    PAGE_NAME = "Settings"
     def __init__(
         self,
         device_managers: Dict[str, DeviceManager] = None,
