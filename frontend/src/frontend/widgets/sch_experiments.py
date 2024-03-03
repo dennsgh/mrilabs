@@ -253,13 +253,13 @@ class ExperimentConfiguration(QWidget):
         formLayout = QFormLayout()
 
         delay = task.get(DELAY_KEYWORD, 0.0)
-        waitWidget = UIComponentFactory.create_widget(
+        delayWidget = UIComponentFactory.create_widget(
             DELAY_KEYWORD, delay, float, None, self.updateYamlDisplay
         )
-        waitWidget.setSizePolicy(
+        delayWidget.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
         )
-        formLayout.addRow(QLabel(f"{DELAY_KEYWORD} (s):"), waitWidget)
+        formLayout.addRow(QLabel(f"{DELAY_KEYWORD} (s):"), delayWidget)
         formWidget.setLayout(formLayout)
         try:
             task_function = self.get_function(task.get("task"))
@@ -401,8 +401,8 @@ class ExperimentConfiguration(QWidget):
             # Handle validation errors for the experiment
             print(f"Validation error in experiment configuration: {e}")
             self.updated_config = {}
-            
-            return 
+
+            return
 
     def getConfiguration(self) -> dict:
         """
