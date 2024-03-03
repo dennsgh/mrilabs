@@ -345,29 +345,10 @@ class DG4202(Device):
 
 class DG4202Mock(MockDevice, DG4202):
     def __init__(self):
-        # Initialize MockDevice part
-        MockDevice.__init__(self, DG4202MockInterface())
-        # Initialize DG4202 part
-        DG4202.__init__(self, DG4202MockInterface())
-        self.killed = False
-
-    def __init__(self):
-        # pass simulated interface
-        self.killed = False
-        super().__init__(DG4202MockInterface())
-
-    def simulate_kill(self, kill: bool):
-        self.killed = kill
-
-    def killed_state_method(self, *args, **kwargs):
-        raise Exception("Device is disconnected!")
-
-    def is_connection_alive(self) -> bool:
-        return not self.killed
-
-    def __getattribute__(self, name):
-        # Only block methods that actually perform operations
-        blocked_methods = {
+        interface = DG4202MockInterface()
+        super().__init__(interface=interface)
+        DG4202.__init__(self, interface=interface)
+        self.blocked_methods = {
             "set_waveform",
             "turn_off_modes",
             "check_status",
@@ -382,13 +363,7 @@ class DG4202Mock(MockDevice, DG4202):
             "get_status",
             "get_output_status",
             "get_waveform_parameters",
-            # "is_connection_alive"
         }
-
-        if object.__getattribute__(self, "killed") and name in blocked_methods:
-            return self.killed_state_method
-        else:
-            return object.__getattribute__(self, name)
 
 
 class DG4202MockInterface(Interface):

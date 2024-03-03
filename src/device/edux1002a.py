@@ -332,20 +332,10 @@ class EDUX1002AMockInterface(Interface):
 
 class EDUX1002AMock(MockDevice, EDUX1002A):
     def __init__(self, timeout=20000):
-        self.killed = False
-        # Initialize MockDevice part
-        MockDevice.__init__(self, EDUX1002AMockInterface())
-        # Initialize EDUX1002A part with the timeout parameter
-        EDUX1002A.__init__(self, EDUX1002AMockInterface(), timeout)
-
-    def simulate_kill(self, kill: bool):
-        self.killed = kill
-
-    def is_connection_alive(self) -> bool:
-        return not self.killed
-
-    def __getattribute__(self, name):
-        blocked_methods = [
+        interface = EDUX1002AMockInterface()
+        super().__init__(interface=interface)
+        EDUX1002A.__init__(self, interface=interface, timeout=timeout)
+        self.blocked_methods = {
             "initialize",
             "autoscale",
             "set_waveform_source",
@@ -365,11 +355,7 @@ class EDUX1002AMock(MockDevice, EDUX1002A):
             "set_waveform_return_type",
             "get_acquisition_type",
             "set_acquisition_count",
-        ]
-        if object.__getattribute__(self, "killed") and name in blocked_methods:
-            raise Exception("Device is disconnected!")
-
-        return object.__getattribute__(self, name)
+        }
 
     # Implementing the mocked methods
     def initialize(self):

@@ -12,11 +12,33 @@ class Device:
     def __init__(self, interface: Interface):
         self.interface = interface
 
+    def is_connection_alive(self) -> bool:
+        raise NotImplementedError(
+            "This class has to be implemented and used as a base class!"
+        )
+
 
 class MockDevice(Device):
     def __init__(self, interface: Interface):
-        super().__init__(interface)
         self.killed = False
+        self.blocked_methods = (
+            set()
+        )  # Default empty set, to be overridden by child classes
+        super().__init__(interface)
+
+    def simulate_kill(self, kill: bool):
+        self.killed = kill
+
+    def is_connection_alive(self) -> bool:
+        return not self.killed
+
+    def __getattribute__(self, name):
+        if object.__getattribute__(self, "killed") and name in object.__getattribute__(
+            self, "blocked_methods"
+        ):
+            raise Exception("Device is disconnected!")
+        else:
+            return object.__getattribute__(self, name)
 
 
 class DeviceDetector:
