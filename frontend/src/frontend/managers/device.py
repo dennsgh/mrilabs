@@ -42,8 +42,10 @@ class DeviceManager(abc.ABC):
         ).detect_device()
 
     def fetch_mock_hardware(self) -> None:
-        """Sets the internal pointer of device ot the mock device."""
-        self.device = self.mock_device
+        """Sets the internal pointer of device to the mock device.
+        Sets it to None if the mock device is simulated to be killed.
+        """
+        self.device = self.mock_device if not self.mock_device.killed else None
 
     def setup_data(self):
         # Will still return a valid dictionary even if self.device is None
@@ -69,18 +71,14 @@ class DeviceManager(abc.ABC):
         last_alive_key = f"{self.device_type.IDN_STRING}_last_alive"
 
         # Decide if we should use a mock device or try to fetch a real device.
-        use_mock = self.args_dict.get("hardware_mock", False)
-
-        if use_mock:
-            self.device = self.mock_device if not self.mock_device.killed else None
+        if self.args_dict.get("hardware_mock", False):
+            self.fetch_mock_hardware()
         else:
             self.fetch_hardware()  # This attempts to set `self.device` to a real device.
         # Determine if the device is considered 'alive'.
         device_alive = self.device is not None and (
             not isinstance(self.device, MockDevice) or not self.device.killed
         )
-
-        # Update the 'last_alive' state accordingly.
         self.update_last_alive_state(last_alive_key, device_alive)
         self.setup_data()
         return self.device

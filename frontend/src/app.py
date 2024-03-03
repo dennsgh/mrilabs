@@ -57,9 +57,8 @@ def init_objects(args_dict: dict):
         logfile=factory.TIMEKEEPER_LOGS,
     )
 
-    for _, task_dict in get_tasks().items():
-        for task_name, func_pointer in task_dict.items():
-            factory.worker.register_task(func_pointer, task_name)
+    for task_name, func_pointer in get_tasks(flatten=True).items():
+        factory.worker.register_task(func_pointer, task_name)
 
     factory.worker.start_worker()
 
@@ -159,12 +158,8 @@ def create_app(args_dict: dict) -> (QApplication, MainWindow):
     window = MainWindow(args_dict)
 
     qdarktheme.setup_theme()
-    # apply_stylesheet(app, "dark_blue.xml", invert_secondary=True, extra=extra)
 
-    # Set custom app icon
-    app_icon = QIcon(
-        Path(os.getenv("ASSETS"), "favicon.ico").as_posix()
-    )  # Replace with the path to your icon file
+    app_icon = QIcon(Path(os.getenv("ASSETS"), "favicon.ico").as_posix())
     app.setWindowIcon(app_icon)
     window.setWindowIcon(app_icon)
 
@@ -181,19 +176,6 @@ def run_application():
         action="store_true",
         help="Run the app in hardware mock mode.",
     )
-    # parser.add_argument(
-    #     "--debug",
-    #     action="store_true",
-    #     default=False,
-    #     help="Run the application in debug mode.",
-    # )
-    # parser.add_argument(
-    #     "--env",
-    #     type=str,
-    #     default="development",
-    #     choices=["development", "production"],
-    #     help="Specify the environment to run the application in. Defaults to development.",
-    # )
 
     args = parser.parse_args()
     args_dict = vars(args)

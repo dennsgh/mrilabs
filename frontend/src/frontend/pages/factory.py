@@ -3,8 +3,8 @@ import time
 from pathlib import Path
 
 import pyvisa
-from frontend.managers.edux1002a import EDUX1002AManager
 from frontend.managers.dg4202 import DG4202Manager
+from frontend.managers.edux1002a import EDUX1002AManager
 from frontend.managers.state_manager import StateManager
 
 from scheduler.timekeeper import Timekeeper
@@ -31,4 +31,3 @@ edux1002a_manager: EDUX1002AManager = None
 # ======================================================== #
 worker: Worker = None
 timekeeper: Timekeeper = None
-app_start_time = time.time()
