@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from typing import Callable
 
 import yaml
-from frontend.header import TASKS_MISSING, TIMESTAMP_KEYWORD, WAIT_KEYWORD
+from frontend.header import DELAY_KEYWORD, TASKS_MISSING, TIMESTAMP_KEYWORD
 from frontend.tasks.task_validator import get_task_enum_name
 from frontend.tasks.tasks import TaskName, get_tasks
 from frontend.widgets.sch_parameters import ParameterConfiguration
@@ -69,7 +69,7 @@ class JobConfigPopup(QDialog):
         timeConfigGroup = QGroupBox()
         timeConfigLayout = QHBoxLayout(timeConfigGroup)
         self.timeConfigComboBox = QComboBox()
-        self.timeConfigComboBox.addItems([WAIT_KEYWORD, TIMESTAMP_KEYWORD])
+        self.timeConfigComboBox.addItems([DELAY_KEYWORD, TIMESTAMP_KEYWORD])
         timeConfigLayout.addWidget(self.timeConfigComboBox)
 
         self.setupTimeConfiguration(timeConfigLayout)
@@ -117,15 +117,15 @@ class JobConfigPopup(QDialog):
 
         if self.timeConfigComboBox.currentText() == TIMESTAMP_KEYWORD:
             schedule_time = self.getDateTimeFromInputs()
-            # Calculate the wait as the difference between the schedule time and now
-            wait = schedule_time - now
+            # Calculate the delay as the difference between the schedule time and now
+            delay = schedule_time - now
         else:
-            # Directly use the wait from the inputs if "wait" is selected
-            wait = self.getDateTimeFromInputs() - now
+            # Directly use the delay from the inputs if "delay" is selected
+            delay = self.getDateTimeFromInputs() - now
 
-        # Ensure wait is always positive before displaying
-        if wait.total_seconds() < 0:
-            wait = timedelta(seconds=0)  # Reset to 0 if negative
+        # Ensure delay is always positive before displaying
+        if delay.total_seconds() < 0:
+            delay = timedelta(seconds=0)  # Reset to 0 if negative
 
         config = {
             "experiment": {
@@ -134,7 +134,7 @@ class JobConfigPopup(QDialog):
                         "task": get_task_enum_name(
                             self.taskSelect.currentText(), TaskName
                         ),
-                        WAIT_KEYWORD: wait.total_seconds(),
+                        DELAY_KEYWORD: delay.total_seconds(),
                         "parameters": parameters,
                     }
                 ]
@@ -146,7 +146,7 @@ class JobConfigPopup(QDialog):
     def updateTimeConfigurationVisibility(self, selection):
         isTimestamp = selection == TIMESTAMP_KEYWORD
         self.timestampWidget.setVisible(isTimestamp)
-        self.waitWidget.setVisible(not isTimestamp)
+        self.delayWidget.setVisible(not isTimestamp)
 
     def updateTaskList(self):
         selected_device = self.deviceSelect.currentText()
@@ -173,18 +173,18 @@ class JobConfigPopup(QDialog):
 
     def setupTimeConfiguration(self, layout):
         # Create widgets to hold the grid layouts
-        self.waitWidget = QWidget(self)
+        self.delayWidget = QWidget(self)
         self.timestampWidget = QWidget(self)
 
         # Set grid layouts to these widgets
         timestampGridLayout = self.createDateTimeInputs(datetime.now())
         waitGridLayout = self.createwaitInputs()
         self.timestampWidget.setLayout(timestampGridLayout)
-        self.waitWidget.setLayout(waitGridLayout)
+        self.delayWidget.setLayout(waitGridLayout)
 
         # Add these widgets to the main layout
         layout.addWidget(self.timestampWidget)
-        layout.addWidget(self.waitWidget)
+        layout.addWidget(self.delayWidget)
 
         self.updateTimeConfigurationVisibility(self.timeConfigComboBox.currentText())
 
@@ -269,7 +269,7 @@ class JobConfigPopup(QDialog):
             input.setVisible(not isTimestamp)
 
     def accept(self):
-        # Schedule the task with either timestamp or wait
+        # Schedule the task with either timestamp or delay
         selected_task = self.taskSelect.currentText()
         schedule_time = self.getDateTimeFromInputs()
         try:
@@ -300,7 +300,7 @@ class JobConfigPopup(QDialog):
                 microsecond=microsecond,
             )
         else:
-            wait = timedelta(
+            delay = timedelta(
                 days=self.waitInputs["days"].value(),
                 hours=self.waitInputs["hours"].value(),
                 minutes=self.waitInputs["minutes"].value(),
@@ -309,7 +309,7 @@ class JobConfigPopup(QDialog):
                     self.waitInputs["milliseconds"].value()
                 ),  # Ensure integer for milliseconds
             )
-            return datetime.now() + wait
+            return datetime.now() + delay
 
 
 class JobDetailsDialog(QDialog):
