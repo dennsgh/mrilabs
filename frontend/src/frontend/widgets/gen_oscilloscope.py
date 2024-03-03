@@ -17,7 +17,7 @@ from PyQt6.QtWidgets import (
 )
 
 
-class OscilloscopeWidget(QWidget):
+class EDUX1002AOscilloscopeWidget(QWidget):
     def __init__(
         self,
         edux1002a_manager: EDUX1002AManager,
@@ -270,7 +270,7 @@ if __name__ == "__main__":
     # Here you'd initialize your Interface and EDUX1002A class instances.
     rm = pyvisa.ResourceManager()
     oscilloscope = DeviceDetector(rm).detect_device()
-    main_window = OscilloscopeWidget(oscilloscope)
+    main_window = EDUX1002AOscilloscopeWidget(oscilloscope)
     main_window.show()
 
     sys.exit(app.exec())

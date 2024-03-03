@@ -1,8 +1,8 @@
 from datetime import datetime
 
 import pyqtgraph as pg
-from frontend.managers.dg4202 import DG4202Manager
 from frontend.header import NOT_FOUND_STRING
+from frontend.managers.dg4202 import DG4202Manager
 from frontend.pages import plotter
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
@@ -22,7 +22,7 @@ from PyQt6.QtWidgets import (
 from device.dg4202 import DG4202
 
 
-class DG4202DefaultWidget(QWidget):
+class DG4202SignalGeneratorWidget(QWidget):
     def check_connection(self) -> bool:
         self.my_generator = self.dg4202_manager.get_device()
         self.all_parameters = self.dg4202_manager.get_data()

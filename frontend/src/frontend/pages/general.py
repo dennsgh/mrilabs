@@ -1,12 +1,12 @@
 from typing import Callable
 
-from frontend.managers.edux1002a import EDUX1002AManager
-from frontend.managers.dg4202 import DG4202Manager
 from frontend.header import TICK_INTERVAL
-from PyQt6.QtWidgets import QLabel,  QVBoxLayout
-from frontend.widgets.gen_oscilloscope import OscilloscopeWidget
-from frontend.widgets.gen_signal import DG4202DefaultWidget
+from frontend.managers.dg4202 import DG4202Manager
+from frontend.managers.edux1002a import EDUX1002AManager
+from frontend.widgets.gen_oscilloscope import EDUX1002AOscilloscopeWidget
+from frontend.widgets.gen_signal import DG4202SignalGeneratorWidget
 from frontend.widgets.templates import BasePage
+from PyQt6.QtWidgets import QLabel, QVBoxLayout
 
 
 class GeneralPage(BasePage):
@@ -34,14 +34,14 @@ class GeneralPage(BasePage):
 
     def initUI(self):
         self.main_layout = QVBoxLayout()
-        self.oscilloscope = OscilloscopeWidget(
+        self.oscilloscope = EDUX1002AOscilloscopeWidget(
             self.edux1002a_manager, tick=TICK_INTERVAL
         )
         self.main_layout.addWidget(self.oscilloscope)
         self.status_label = QLabel("")
         self.main_layout.addWidget(self.status_label)
 
-        self.default_widget = DG4202DefaultWidget(
+        self.default_widget = DG4202SignalGeneratorWidget(
             self.dg4202_manager, self, self.args_dict
         )
         self.main_layout.addWidget(self.default_widget)
