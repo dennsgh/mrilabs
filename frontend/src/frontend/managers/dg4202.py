@@ -8,7 +8,7 @@ from device.dg4202 import DG4202, DG4202DataSource, DG4202Mock
 
 class DG4202Manager(DeviceManager):
     device_type = DG4202
-    device_type_mock = DG4202Mock
+    mock_device_type = DG4202Mock
 
     def __init__(
         self,

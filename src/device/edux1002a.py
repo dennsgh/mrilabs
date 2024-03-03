@@ -297,13 +297,13 @@ class EDUX1002A(Device):
 
 
 class EDUX1002ADataSource(DataSource):
-    def __init__(self, device: EDUX1002A, channel: int = 1):
-        super().__init__(device)
+    def __init__(self, source: EDUX1002A, channel: int = 1):
+        super().__init__(source)
         self.channel = channel
 
     def query_data(self):
         try:
-            time, voltage = self.device.get_waveform(self.channel)
+            time, voltage = self.source.get_waveform(self.channel)
             return voltage
         except Exception as e:
             raise RuntimeError(f"Error querying EDUX1002A:{e}")

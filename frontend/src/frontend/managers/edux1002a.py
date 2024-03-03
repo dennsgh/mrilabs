@@ -1,4 +1,5 @@
 import pyvisa
+from frontend.header import OSCILLOSCOPE_BUFFER_SIZE
 from frontend.managers.device import DeviceManager
 from frontend.managers.state_manager import StateManager
 
@@ -10,7 +11,7 @@ from device.edux1002a import EDUX1002A, EDUX1002ADataSource, EDUX1002AMock
 
 class EDUX1002AManager(DeviceManager):
     device_type = EDUX1002A
-    device_type_mock = EDUX1002AMock
+    mock_device_type = EDUX1002AMock
 
     def __init__(
         self,

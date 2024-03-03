@@ -2,7 +2,7 @@ import abc
 import logging
 import time
 from datetime import timedelta
-from typing import Union
+from typing import Type, Union
 
 import pyvisa
 from frontend.managers.state_manager import StateManager
@@ -13,8 +13,8 @@ from device.device import Device, DeviceDetector, MockDevice
 
 
 class DeviceManager(abc.ABC):
-    device_type = Device
-    device_type_mock = MockDevice
+    device_type: Type[Device] = Device
+    mock_device_type: Type[MockDevice] = MockDevice
 
     def __init__(
         self,
@@ -25,7 +25,7 @@ class DeviceManager(abc.ABC):
         self.state_manager = state_manager
         self.args_dict = args_dict
         self.rm = resource_manager
-        self.mock_device = self.device_type_mock()
+        self.mock_device = self.mock_device_type()
         self.mock_device.killed = False
         self.setup_device()
         self.setup_data()
@@ -38,13 +38,13 @@ class DeviceManager(abc.ABC):
 
     def fetch_hardware(self) -> None:
         """Fetch and update the device driver (hardware, not simulated!)"""
-        self.device: Device = DeviceDetector(
+        self.device = DeviceDetector(
             resource_manager=self.rm, device_type=self.device_type
         ).detect_device()
 
     def fetch_mock_hardware(self) -> None:
-        """Fetch and update the device driver (hardware, not simulated!)"""
-        self.device: MockDevice = self.mock_device
+        """Sets the internal pointer of device ot the mock device."""
+        self.device = self.mock_device
 
     def setup_data(self):
         # Will still return a valid dictionary even if self.device is None
@@ -142,18 +142,3 @@ class DeviceManager(abc.ABC):
             return str(timedelta(seconds=int(uptime_seconds)))
         else:
             return "N/A"
-
-
-class DataSourceFactory:
-    _registry = {}
-
-    @classmethod
-    def register(cls, device_type, data_source_type):
-        cls._registry[device_type] = data_source_type
-
-    @classmethod
-    def create_data_source(cls, device, *args, **kwargs):
-        data_source_type = cls._registry.get(type(device))
-        if data_source_type:
-            return data_source_type(device, *args, **kwargs)
-        raise ValueError(f"No data source registered for device type {type(device)}")

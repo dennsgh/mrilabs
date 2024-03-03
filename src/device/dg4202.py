@@ -490,11 +490,11 @@ class DG4202MockInterface(Interface):
 
 
 class DG4202DataSource(DataSource):
-    def __init__(self, device: DG4202):
-        super().__init__(device)
+    def __init__(self, source: DG4202):
+        super().__init__(source)
         self.all_parameters = {}
         self.default_dict = {"connected": None}
-        self.device: DG4202 = device
+        self.source: DG4202 = source
         for channel in range(1, 3):
             self.default_dict[f"{channel}"] = {
                 "waveform": {
@@ -528,20 +528,20 @@ class DG4202DataSource(DataSource):
         Returns:
             dict: Dictionary containing parameters of the device.
         """
-        if self.device:
-            is_alive = self.device.is_connection_alive()
+        if self.source:
+            is_alive = self.source.is_connection_alive()
 
             if is_alive:
                 for channel in range(1, 3):
                     self.all_parameters[f"{channel}"] = {
-                        "waveform": self.device.get_waveform_parameters(channel),
-                        "mode": self.device.get_mode(channel),
-                        "output_status": self.device.get_output_status(channel),
+                        "waveform": self.source.get_waveform_parameters(channel),
+                        "mode": self.source.get_mode(channel),
+                        "output_status": self.source.get_output_status(channel),
                     }
                 self.all_parameters["connected"] = True
 
             else:
-                self.device = None
+                self.source = None
                 self.all_parameters = self.default_dict
                 self.all_parameters["connected"] = False
 
@@ -552,4 +552,4 @@ class DG4202DataSource(DataSource):
 
 
 if __name__ == "__main__":
-    print(DG4202DataSource(None).query_data())
+    print(DG4202DataSource(None).get_data())
