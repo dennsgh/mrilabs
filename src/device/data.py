@@ -1,13 +1,12 @@
 import abc
 from collections import deque
-from typing import Any
 
 import numpy as np
 
 
 class DataSource(abc.ABC):
-    def __init__(self, source: Any):
-        self.source: Any = source
+    def __init__(self, source: abc.ABC):
+        self.source: abc.ABC = source
         pass
 
     @abc.abstractmethod

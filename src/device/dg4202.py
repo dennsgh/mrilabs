@@ -524,7 +524,3 @@ class DG4202DataSource(DataSource):
             self.all_parameters = self.default_dict
             self.all_parameters["connected"] = False
         return self.all_parameters
-
-
-if __name__ == "__main__":
-    print(DG4202DataSource(None).get_data())

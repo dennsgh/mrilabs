@@ -35,11 +35,8 @@ class DG4202SignalGeneratorWidget(QWidget):
             self.my_generator = None
         return is_alive
 
-    def __init__(
-        self, dg4202_manager: DG4202Manager, parent=None, args_dict: dict = None
-    ):
+    def __init__(self, dg4202_manager: DG4202Manager, parent=None):
         super().__init__(parent=parent)
-        self.args_dict = args_dict
         self.sweep_plot_data = {1: None, 2: None}
         self.waveform_plot_data = {1: None, 2: None}
         self.channel_count = 2

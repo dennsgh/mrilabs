@@ -24,9 +24,8 @@ class DeviceManager(abc.ABC):
     ):
         self.state_manager = state_manager
         self.args_dict = args_dict
-        self.rm = resource_manager
+        self.resource_manager = resource_manager
         self.mock_device = self.mock_device_type()
-        self.mock_device.killed = False
         self.setup_device()
         self.setup_data()
 
@@ -39,7 +38,7 @@ class DeviceManager(abc.ABC):
     def fetch_hardware(self) -> None:
         """Fetch and update the device driver (hardware, not simulated!)"""
         self.device = DeviceDetector(
-            resource_manager=self.rm, device_type=self.device_type
+            resource_manager=self.resource_manager, device_type=self.device_type
         ).detect_device()
 
     def fetch_mock_hardware(self) -> None:

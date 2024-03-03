@@ -41,9 +41,7 @@ class GeneralPage(BasePage):
         self.status_label = QLabel("")
         self.main_layout.addWidget(self.status_label)
 
-        self.default_widget = DG4202SignalGeneratorWidget(
-            self.dg4202_manager, self, self.args_dict
-        )
+        self.default_widget = DG4202SignalGeneratorWidget(self.dg4202_manager, self)
         self.main_layout.addWidget(self.default_widget)
 
         self.setLayout(self.main_layout)
