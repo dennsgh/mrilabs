@@ -6,11 +6,15 @@ from typing import Dict
 
 import pyvisa
 import qdarktheme
-from frontend.header import OSCILLOSCOPE_BUFFER_SIZE
+from frontend.header import OSCILLOSCOPE_BUFFER_SIZE, DeviceName
 from frontend.managers.dg4202 import DG4202Manager
 from frontend.managers.edux1002a import EDUX1002AManager
 from frontend.managers.state_manager import StateManager
 from frontend.pages import factory, general, monitor, scheduler, settings
+from frontend.pages.general import GeneralPage
+from frontend.pages.monitor import MonitorPage
+from frontend.pages.scheduler import SchedulerPage
+from frontend.pages.settings import SettingsPage
 from frontend.tasks.tasks import get_tasks
 from frontend.widgets.menu import MainMenuBar
 from frontend.widgets.sidebar import Sidebar
@@ -74,32 +78,32 @@ class MainWindow(ModularMainWindow):
         # ---------------------------SIDEBAR SETUP------------------------------ #
         self.sidebar = Sidebar(self)
         device_managers = {
-            "DG4202": factory.dg4202_manager,
-            "EDUX1002A": factory.edux1002a_manager,
+            DeviceName.DG4202.value: factory.dg4202_manager,
+            DeviceName.EDUX1002A.value: factory.edux1002a_manager,
         }
         self.sidebar.sizePolicy()
         self.sidebar_dict: Dict[str, QWidget] = {
-            "General": general.GeneralPage(
+            GeneralPage.PAGE_NAME: GeneralPage(
                 dg4202_manager=factory.dg4202_manager,
                 edux1002a_manager=factory.edux1002a_manager,
-                root_callback=self.root_callback,
                 parent=self,
                 args_dict=args_dict,
+                root_callback=self.root_callback,
             ),
-            "Scheduler": scheduler.SchedulerPage(
+            SchedulerPage.PAGE_NAME: SchedulerPage(
                 timekeeper=factory.timekeeper,
                 parent=self,
                 args_dict=args_dict,
                 root_callback=self.root_callback,
             ),
-            "Monitor": monitor.MonitorPage(
+            MonitorPage.PAGE_NAME: MonitorPage(
                 device_managers=device_managers,
                 parent=self,
                 args_dict=args_dict,
                 monitor_logs=factory.MONITOR_FILE,
                 root_callback=self.root_callback,
             ),
-            "Settings": settings.SettingsPage(
+            SettingsPage.PAGE_NAME: SettingsPage(
                 device_managers=device_managers,
                 parent=self,
                 args_dict=args_dict,
