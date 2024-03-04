@@ -135,6 +135,7 @@ class JobConfigPopup(QDialog):
                             self.taskSelect.currentText(), TaskName
                         ),
                         DELAY_KEYWORD: delay.total_seconds(),
+                        "description": f"{self.taskSelect.currentText()} at time {delay.total_seconds()}s",
                         "parameters": parameters,
                     }
                 ]
