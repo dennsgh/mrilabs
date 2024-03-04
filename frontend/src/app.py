@@ -4,6 +4,7 @@ import signal
 from pathlib import Path
 from typing import Dict
 
+from utils.logging import get_logger
 import pyvisa
 import qdarktheme
 from frontend.header import OSCILLOSCOPE_BUFFER_SIZE, DeviceName
@@ -38,6 +39,7 @@ def signal_handler(signum, frame):
 
 
 def init_objects(args_dict: dict):
+    logger = get_logger()
     factory.resource_manager = pyvisa.ResourceManager()
     factory.state_manager = StateManager()
     factory.edux1002a_manager = EDUX1002AManager(
@@ -53,12 +55,12 @@ def init_objects(args_dict: dict):
     )
     factory.worker = Worker(
         function_map_file=factory.FUNCTION_MAP_FILE,
-        logfile=factory.WORKER_LOGS,
+        logger=logger,
     )
     factory.timekeeper = Timekeeper(
         persistence_file=factory.TIMEKEEPER_JOBS_FILE,
         worker_instance=factory.worker,
-        logfile=factory.TIMEKEEPER_LOGS,
+        logger=logger
     )
 
     for task_name, func_pointer in get_tasks(flatten=True).items():

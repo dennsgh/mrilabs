@@ -336,6 +336,7 @@ class ExperimentConfiguration(QWidget):
         if self.updated_config is None:
             self.updated_config = {
                 EXPERIMENT_KEYWORD: {
+                    "description": "",
                     "name": self.config.get(EXPERIMENT_KEYWORD, {}).get(
                         "name", "Unnamed Experiment"
                     ),
@@ -376,7 +377,7 @@ class ExperimentConfiguration(QWidget):
             try:
                 task = Task(
                     task=original_step.get("task"),
-                    description=original_step.get("description"),
+                    description=original_step.get("description", ""),
                     delay=delay,
                     parameters=parameters,
                 )

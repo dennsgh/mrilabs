@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 
 class Task(BaseModel):
     task: str
-    description: str
+    description: str = ""
     delay: float = 0
     parameters: Dict[str, Any] = Field(
         default_factory=dict

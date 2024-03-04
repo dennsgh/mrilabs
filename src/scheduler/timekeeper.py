@@ -15,7 +15,6 @@ class Timekeeper:
         self,
         persistence_file: Path,
         worker_instance: Worker,
-        logfile: Path = None,
         logger: logging.Logger = None,
         user_callback: Callable = None,
         archive: Path = None,
@@ -32,8 +31,6 @@ class Timekeeper:
         self.worker = worker_instance
         self.jobs = self.load_jobs()
         self.archive = archive or Path(os.getenv("DATA"), "archive.json")
-        self.logfile = logfile or Path(os.getenv("LOGS"), "schedule.logs")
-        self._configure_logging()
         self.reload_function_map()
         self.__reschedule_jobs__()
         self.user_callback = user_callback
@@ -57,23 +54,6 @@ class Timekeeper:
                 json.dump({}, file)
         except Exception as e:
             self.logger.error(f"Error clearing finished jobs: {e}")
-
-    def _configure_logging(self) -> None:
-        """
-        Configures logging for the Timekeeper class.
-        """
-        self.logger.setLevel(logging.DEBUG)
-        file_handler = logging.FileHandler(self.logfile)
-        file_handler.setLevel(logging.DEBUG)
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(logging.DEBUG)
-        formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        )
-        file_handler.setFormatter(formatter)
-        console_handler.setFormatter(formatter)
-        self.logger.addHandler(file_handler)
-        self.logger.addHandler(console_handler)
 
     def load_jobs(self) -> Dict[str, Any]:
         """

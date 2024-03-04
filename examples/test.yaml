@@ -1,0 +1,11 @@
+experiment:
+  steps:
+  - task: DG4202_SET_WAVEFORM
+    delay: 0.0
+    parameters:
+      channel: 1
+      send_on: true
+      waveform_type: PULSE
+      amplitude: 3.0
+      frequency: 250000.0
+      offset: 0.0

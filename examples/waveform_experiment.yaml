@@ -1,55 +1,24 @@
-# Example of experiment definition reusing tasks in tasks.py
 experiment:
-  name: Waveform Experiment
   steps:
-  - task: DG4202_SET_WAVEFORM
-    description: my description 1
-    delay: 2  # how much to delay in reference to now.
-    parameters:
-      channel: 1
-      send_on: true
-      waveform_type: SIN
-      amplitude: 2
-      frequency: 5
-      offset: 0
-  - task: Set Waveform Parameters 
-    description: my description 2
-    delay: 2 # always in reference to now!
-    parameters:
-      channel: 1
-      send_on: true
-      waveform_type: PULSE
-      amplitude: 3
-      frequency: 10
-      offset: 0
-  - task: DG4202_SET_WAVEFORM
-    description: my description 3
-    delay: 4 # delay is always in reference to now. e.g. wherever you place this does not matter.
-    parameters:
-      channel: 2
-      send_on: true
-      waveform_type: PULSE
-      amplitude: 3.0
-      frequency: 15
-      offset: 0
-  - task: DG4202_TOGGLE
-    description: turn ch 1 off
-    delay: 4
-    parameters:
-      channel: 1
-      output: false
   - task: DG4202_SET_SWEEP
-    description: sweep
-    delay: 4
+    delay: 2
     parameters:
-      channel: 2
-      time: 5
-      fstart: 10
+      channel: 1
+      send_on: false
+      fstart: 0.0
+      fstop: 50
+      time: 2
+      rtime: 0.0
+      htime_start: 0.0
+      htime_stop: 0.0
+  - task: DG4202_SET_SWEEP
+    delay: 5
+    parameters:
+      channel: 1
+      send_on: false
+      fstart: 0.0
       fstop: 100
-      send_on: true
-  - task: DG4202_TOGGLE
-    description: turn ch2 off
-    delay: 6
-    parameters:
-      channel: 2
-      output: false
+      time: 2
+      rtime: 0.0
+      htime_start: 0.0
+      htime_stop: 0.0

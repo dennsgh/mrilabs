@@ -15,7 +15,6 @@ class Worker:
         self,
         function_map_file: Path,
         daemon: bool = False,
-        logfile: Path = None,
         logger: logging.Logger = None,
     ):
         """
@@ -27,30 +26,7 @@ class Worker:
         self.logger = logger or logging.getLogger(__name__)
         self.scheduler = BackgroundScheduler(daemon=daemon)
         self.function_map = FunctionMap(function_map_file)
-        self.logfile = logfile or Path(os.getenv("LOGS"), "worker.log")
-        self.configure_logging()
         self.logger.info("Function Map OK")
-
-    def configure_logging(self) -> None:
-        """
-        Configures logging for the Worker class.
-        """
-        self.logger.setLevel(logging.DEBUG)
-
-        file_handler = logging.FileHandler(self.logfile)
-        file_handler.setLevel(logging.DEBUG)
-
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(logging.DEBUG)
-
-        formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        )
-        file_handler.setFormatter(formatter)
-        console_handler.setFormatter(formatter)
-
-        self.logger.addHandler(file_handler)
-        self.logger.addHandler(console_handler)
 
     def register_task(self, func: Callable, task_name: str) -> None:
         """
