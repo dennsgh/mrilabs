@@ -1,19 +1,16 @@
 import logging
-import os
 import traceback
 from datetime import datetime
-from pathlib import Path
 from typing import Any, Callable
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from scheduler.functionmap import FunctionMap
 
-
 class Worker:
     def __init__(
         self,
-        function_map_file: Path,
+        function_map: dict,
         daemon: bool = False,
         logger: logging.Logger = None,
     ):
@@ -25,7 +22,7 @@ class Worker:
         """
         self.logger = logger or logging.getLogger(__name__)
         self.scheduler = BackgroundScheduler(daemon=daemon)
-        self.function_map = FunctionMap(function_map_file)
+        self.function_map = FunctionMap(function_map)
         self.logger.info("Function Map OK")
 
     def register_task(self, func: Callable, task_name: str) -> None:

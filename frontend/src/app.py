@@ -26,7 +26,7 @@ from PyQt6.QtWidgets import QApplication, QStackedWidget, QWidget
 
 from scheduler.timekeeper import Timekeeper
 from scheduler.worker import Worker
-
+from scheduler import registry
 # Before creating your application instance
 QLocale.setDefault(QLocale(QLocale.Language.English, QLocale.Country.UnitedStates))
 
@@ -54,7 +54,7 @@ def init_objects(args_dict: dict):
         resource_manager=factory.resource_manager,
     )
     factory.worker = Worker(
-        function_map_file=factory.FUNCTION_MAP_FILE,
+        function_map=registry.function_map,
         logger=logger,
     )
     factory.timekeeper = Timekeeper(

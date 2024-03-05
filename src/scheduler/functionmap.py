@@ -1,11 +1,8 @@
-import json
-import os
-from pathlib import Path
 from typing import Any, Callable, Dict, Optional, Tuple
 
 
 class FunctionMap:
-    def __init__(self, map_file: Optional[Path] = None):
+    def __init__(self, function_map: dict):
         """
         Initializes the FunctionMap class.
 
@@ -13,32 +10,8 @@ class FunctionMap:
             map_file (Optional[Path]): Path to the JSON file that contains the function mapping.
                                        Defaults to 'function_map.json' in the CONFIG directory.
         """
-        self.map_file = map_file or Path(os.getenv("CONFIG", "function_map.json"))
-        self.function_map = self.load_function_map()
+        self.function_map = function_map
 
-    def load_function_map(self) -> Dict[str, Tuple[str, str]]:
-        """
-        Loads the function map from the specified JSON file.
-
-        Returns:
-            Dict[str, Tuple[str, str]]: A dictionary mapping identifiers to (module, function) tuples.
-        """
-        try:
-            with open(self.map_file, "r") as file:
-                data = json.load(file)
-                return {k: (v["module"], v["name"]) for k, v in data.items()}
-        except (FileNotFoundError, json.JSONDecodeError):
-            return {}
-
-    def save_function_map(self) -> None:
-        """
-        Saves the current function map to the JSON file.
-        """
-        with open(self.map_file, "w") as file:
-            serialized_map = {
-                k: {"module": v[0], "name": v[1]} for k, v in self.function_map.items()
-            }
-            json.dump(serialized_map, file)
 
     def get_function(self, identifier: str) -> Optional[Callable]:
         """
@@ -65,8 +38,7 @@ class FunctionMap:
             func (Callable): The function object to add.
         """
         self.function_map[identifier] = (func.__module__, func.__name__)
-        self.save_function_map()
-
+        
     @staticmethod
     def serialize_func(func_data: Tuple[str, str]) -> Dict[str, str]:
         """
