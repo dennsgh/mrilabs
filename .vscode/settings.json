@@ -28,24 +28,24 @@
     "WORKINGDIR": "${workspaceRoot}",
     "CONFIG": "${workspaceRoot}/etc",
     "DATA": "${workspaceRoot}/data",
-    "ASSETS": "${workspaceRoot}/frontend/assets",
+    "ASSETS": "${workspaceRoot}assets",
     "LOGS": "${workspaceRoot}/logs",
-    "PYTHONPATH": "${env:PYTHONPATH}:${workspaceRoot}/src:${workspaceRoot}/frontend/src"
+    "PYTHONPATH": "${env:PYTHONPATH}:${workspaceRoot}/src"
   },
   "terminal.integrated.env.windows": {
     "WORKINGDIR": "${workspaceRoot}",
     "CONFIG": "${workspaceRoot}\\etc",
     "DATA": "${workspaceRoot}\\data",
-    "ASSETS": "${workspaceRoot}\\frontend\\assets",
+    "ASSETS": "${workspaceRoot}\\assets",
     "LOGS": "${workspaceRoot}\\logs",
-    "PYTHONPATH": "${env:PYTHONPATH};${workspaceRoot}\\src;${workspaceRoot}\\frontend\\src"
+    "PYTHONPATH": "${env:PYTHONPATH};${workspaceRoot}\\src"
   },
   "terminal.integrated.env.osx": {
     "WORKINGDIR": "${workspaceRoot}",
     "CONFIG": "${workspaceRoot}/etc",
     "DATA": "${workspaceRoot}/data",
-    "ASSETS": "${workspaceRoot}/frontend/assets",
+    "ASSETS": "${workspaceRoot}assets",
     "LOGS": "${workspaceRoot}/logs",
-    "PYTHONPATH": "${env:PYTHONPATH}:${workspaceRoot}/src:${workspaceRoot}/frontend/src"
+    "PYTHONPATH": "${env:PYTHONPATH}:${workspaceRoot}/src"
   }
 }
