@@ -253,7 +253,7 @@ class ExperimentConfiguration(QWidget):
         formLayout.addRow(QLabel(f"{DELAY_KEYWORD} (s):"), delayWidget)
         formWidget.setLayout(formLayout)
         try:
-            task_function = self.get_function(task.task)
+            task_function = self.get_function(task)
             if not task_function:
                 return (
                     False,
@@ -304,7 +304,7 @@ class ExperimentConfiguration(QWidget):
 
             scrollArea.setWidget(formWidget)
             self.tabWidget.addTab(
-                tab, Validator.get_task_enum_value(task.task, self.task_enum)
+                tab, self.validator.get_task_enum_value(task.task, self.task_enum)
             )
             layout.addStretch(1)
             scrollArea.setSizePolicy(
@@ -386,7 +386,7 @@ class ExperimentConfiguration(QWidget):
         self.getUserData()
         return self.updated_experiment
 
-    def get_function(self, task: str) -> object | None:
+    def get_function(self, task: Task) -> object | None:
         """
         Retrieves the function associated with a specific task name.
 
@@ -398,9 +398,7 @@ class ExperimentConfiguration(QWidget):
         Returns:
             The function associated with the task or None if not found.
         """
-        return self.validator.get_function_to_validate(
-            task, self.task_functions, self.task_enum
-        )
+        return self.validator.get_function_to_validate(task)
 
     def generate_experiment_summary(self, data: Experiment):
         if not data:
@@ -414,7 +412,9 @@ class ExperimentConfiguration(QWidget):
         for i, step in enumerate(steps, 1):
             task_name = step.task
             description = step.description
-            summary_lines.append(f"  Step {i}: {task_name} - {description}")
+            summary_lines.append(
+                f"  Step {i}: {task_name} - {description if description else 'no description given'}"
+            )
 
         return "\n".join(summary_lines)
 

@@ -143,7 +143,7 @@ class JobConfigPopup(QDialog):
         )
 
         # Wrap the task in an Experiment model
-        experiment = Experiment(name=,steps=[task])
+        experiment = Experiment(name="unnamed", steps=[task])
 
         # Convert the Experiment model instance to YAML string for display
         yamlStr = yaml.dump(

@@ -9,9 +9,7 @@ from frontend.tasks.model import Experiment, ExperimentWrapper, Task
 
 
 class Validator:
-    def __init__(
-        self, task_functions: Dict[str, Callable], task_enum: Optional[Enum] = None
-    ):
+    def __init__(self, task_functions: Dict[str, Callable], task_enum: Optional[Enum]):
         self.task_functions = task_functions
         self.task_enum = task_enum
 
@@ -40,14 +38,14 @@ class Validator:
         results = []
         for index, task in enumerate(experiment.steps, start=1):
             task_name = task.task.upper()
-            task_function = self.get_function_to_validate(task_name)
+            task_function = self.get_function_to_validate(task)
 
             if task_function:
                 is_valid, errors, warnings = self.validate_task_parameters(
-                    task_function, task.parameters
+                    task_function, task
                 )
                 error_level = ErrorLevel.INFO if is_valid else ErrorLevel.BAD_CONFIG
-                message = "Validation issues: " + "; ".join(errors + warnings)
+                message = " " + "; ".join(errors + warnings)
                 results.append(
                     (f"Step {index}: {task_name}", is_valid, message, error_level)
                 )
@@ -62,25 +60,23 @@ class Validator:
                 )
         return results
 
-    def get_function_to_validate(
-        self, name: str, task_functions: dict = None, task_enum: Enum = None
-    ) -> Optional[Callable]:
+    def get_function_to_validate(self, task: Task) -> Optional[Callable]:
         """Match the name to a function in task_functions directly or via an Enum."""
-        task_functions = task_functions or self.task_functions
-        task_enum = task_enum or self.task_enum
-        function_to_validate = task_functions.get(name.upper())
+        # Try direct lookup by task name (uppercased) in the task_functions dictionary
+        function_to_validate = self.task_functions.get(task.task.upper())
+
+        # If not found, try to match against Enum names or values
         if not function_to_validate and self.task_enum:
-            enum_member = next(
-                (
-                    member
-                    for member in task_enum
-                    if member.name.upper() == name.upper()
-                    or member.value.upper() == name.upper()
-                ),
-                None,
-            )
-            if enum_member:
-                function_to_validate = self.task_functions.get(enum_member.value)
+            for enum_member in self.task_enum:
+                if (
+                    enum_member.name.upper() == task.task.upper()
+                    or enum_member.value.upper() == task.task.upper()
+                ):
+                    # If a match is found, attempt to get the corresponding function using enum_member's value
+                    function_to_validate = self.task_functions.get(enum_member.value)
+                    if function_to_validate:
+                        return function_to_validate
+
         return function_to_validate
 
     @staticmethod
@@ -207,7 +203,7 @@ class Validator:
 
     @staticmethod
     def validate_task_parameters(
-        task_function, parameters: Dict[str, Any]
+        task_function, task: Task
     ) -> Tuple[bool, List[str], List[str]]:
         sig = inspect.signature(task_function)
         errors = []
@@ -215,7 +211,7 @@ class Validator:
 
         for name, param in sig.parameters.items():
             expected_type = param.annotation
-            provided_value = parameters.get(name, inspect.Parameter.empty)
+            provided_value = task.parameters.get(name, inspect.Parameter.empty)
 
             # Check for missing parameters
             if provided_value is inspect.Parameter.empty:
@@ -233,23 +229,17 @@ class Validator:
                     f"Type mismatch: {name} (got {type(provided_value).__name__}, expected {expected_type.__name__})"
                 )
 
-        for name in parameters:
+        for name in task.parameters:
             if name not in sig.parameters:
                 errors.append(f"Extra param provided: {name}.")
 
         is_valid = not errors
         return is_valid, errors, warnings
 
-    @staticmethod
-    def validate_task(
-        name: str, task_functions: Dict[str, Callable], task_enum: Enum = None
-    ) -> List[Tuple[str, bool, str]]:
-        name = str(name).upper()
+    def validate_task(task: Task) -> List[Tuple[str, bool, str]]:
 
         # Use the refactored function to get the function to validate
-        function_to_validate = Validator.get_function_to_validate(
-            name, task_functions, task_enum
-        )
+        function_to_validate = Validator.get_function_to_validate(task)
 
         # Proceed with validation if a matching function is found
         if function_to_validate:
