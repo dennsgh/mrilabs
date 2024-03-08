@@ -5,11 +5,14 @@ from datetime import timedelta
 from typing import Type, Union
 
 import pyvisa
-from frontend.managers.state_manager import StateManager
 
 # Import classes and modules from device module as needed.
 from device.data import DataSource
 from device.device import Device, DeviceDetector, MockDevice
+from frontend.managers.state_manager import StateManager
+from utils.logging import get_logger
+
+logger = get_logger()
 
 
 class DeviceManager(abc.ABC):

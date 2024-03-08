@@ -1,9 +1,6 @@
 import json
 from typing import Callable
 
-from frontend.pages import factory
-from frontend.widgets.sch_exp_popup import ExperimentConfigPopup
-from frontend.widgets.sch_job_popup import JobConfigPopup, JobDetailsDialog
 from PyQt6 import QtCore
 from PyQt6.QtWidgets import (
     QHeaderView,
@@ -17,8 +14,14 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from frontend.pages import factory
+from frontend.widgets.sch_exp_popup import ExperimentConfigPopup
+from frontend.widgets.sch_job_popup import JobConfigPopup, JobDetailsDialog
 from scheduler.timekeeper import Timekeeper
 from utils import logging as logutils
+from utils.logging import get_logger
+
+logger = get_logger()
 
 
 class SchedulerWidget(QWidget):
@@ -155,9 +158,9 @@ class SchedulerWidget(QWidget):
                 self.timekeeper.cancel_job(job_id)
                 self.update_jobs_table()
             except Exception as e:
-                print(f"Error removing job {job_id}: {e}")
+                logger.info(f"Error removing job {job_id}: {e}")
         else:
-            print("No job selected")
+            logger.info("No job selected")
 
     def update_finished_jobs_list(self):
         self.finishedJobsTable.setRowCount(0)  # Clear the existing rows in the table

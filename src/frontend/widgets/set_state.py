@@ -1,8 +1,9 @@
 import json
 from pathlib import Path
 
-from frontend.header import VERSION_STRING
 from PyQt6.QtWidgets import QLabel, QLineEdit, QPushButton, QVBoxLayout, QWidget
+
+from frontend.header import VERSION_STRING
 
 
 class SettingsStateWidget(QWidget):

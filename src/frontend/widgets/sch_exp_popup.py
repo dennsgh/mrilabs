@@ -21,6 +21,9 @@ from frontend.tasks.tasks import TaskName, get_tasks
 from frontend.widgets.sch_experiments import ExperimentConfiguration
 from scheduler.timekeeper import Timekeeper
 
+from utils.logging import get_logger
+
+logger = get_logger()
 
 class ExperimentConfigPopup(QDialog):
     def __init__(self, timekeeper: Timekeeper, callback: Callable, parent=None):

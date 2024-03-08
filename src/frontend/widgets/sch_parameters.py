@@ -6,6 +6,9 @@ from PyQt6.QtWidgets import QHBoxLayout, QLabel, QStackedWidget, QVBoxLayout, QW
 from frontend.widgets.ui_factory import (  # Assuming custom import, details unknown
     UIComponentFactory,
 )
+from utils.logging import get_logger
+
+logger = get_logger()
 
 
 class ParameterConfiguration(QWidget):

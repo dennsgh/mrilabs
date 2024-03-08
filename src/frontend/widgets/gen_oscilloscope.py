@@ -17,7 +17,9 @@ from PyQt6.QtWidgets import (
 import frontend.header as header
 from frontend.header import TICK_INTERVAL
 from frontend.managers.edux1002a import EDUX1002AManager
+from utils.logging import get_logger
 
+logger = get_logger()
 
 class EDUX1002AOscilloscopeWidget(QWidget):
     def __init__(
@@ -52,7 +54,7 @@ class EDUX1002AOscilloscopeWidget(QWidget):
                 self.edux1002a_manager.buffer_size
             )
         else:
-            print("EDUX1002A not connnected, device configuration not started.")
+            logger.info("EDUX1002A not connnected, device configuration not started.")
 
     def update_spinbox_values(self, xRange, yRange, x_input, y_input):
         x_input.blockSignals(True)
@@ -243,7 +245,7 @@ class EDUX1002AOscilloscopeWidget(QWidget):
             time = np.arange(len(voltage))
             self.plot_data[self.active_channel].setData(time, voltage)
         except Exception as e:
-            print(f"[Oscilloscope]{e}")
+            logger.info(f"[Oscilloscope]{e}")
             self.freeze()
 
     def freeze(self):

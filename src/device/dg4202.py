@@ -427,6 +427,7 @@ class DG4202MockInterface(Interface):
         # Setup any default attributes or return values if necessary
         mock_resource.timeout = None  # Set default value for timeout attribute
         super().__init__(mock_resource)
+        self.debug = True
 
     def write(self, command: str) -> None:
         if command in [
@@ -456,7 +457,6 @@ class DG4202MockInterface(Interface):
         else:
             command, value = command.split()
             self.state[command] = value
-        print(f"setting {command} {value}")
 
     def read(self, command: str) -> str:
         if command.endswith("?"):

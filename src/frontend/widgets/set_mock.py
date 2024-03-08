@@ -1,6 +1,5 @@
 from typing import Dict
 
-from frontend.managers.device import DeviceManager
 from PyQt6.QtWidgets import (
     QComboBox,
     QHBoxLayout,
@@ -9,6 +8,11 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
+from frontend.managers.device import DeviceManager
+from utils.logging import get_logger
+
+logger = get_logger()
 
 
 class MockHardwareWidget(QWidget):
@@ -50,5 +54,5 @@ class MockHardwareWidget(QWidget):
 
             # Directly access mock_device and change its 'killed' state
             if device_manager.args_dict.get("hardware_mock"):
-                print(f"[Settings] {device_name} mock kill {mock_kill}")
+                logger.info(f"[Settings] {device_name} mock kill {mock_kill}")
                 device_manager.set_mock_state(mock_kill)

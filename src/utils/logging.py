@@ -18,11 +18,11 @@ def load_json_with_backup(path: Path):
             with open(path, "r") as file:
                 return json.load(file)
         except json.JSONDecodeError as e:
-            print(f"Corrupt JSON file detected: {e}. Creating a numbered backup.")
+            logger.info(f"Corrupt JSON file detected: {e}. Creating a numbered backup.")
             backup_path = create_numbered_backup(path)
             path.rename(backup_path)
         except Exception as e:
-            print(f"Unexpected error loading JSON file: {e}.")
+            logger.info(f"Unexpected error loading JSON file: {e}.")
     return {}
 
 
@@ -34,7 +34,7 @@ def save_json(data, path: Path):
         with open(path, "w") as file:
             json.dump(data, file, indent=4)
     except Exception as e:
-        print(f"Unexpected error loading JSON file: {e}.")
+        logger.info(f"Unexpected error loading JSON file: {e}.")
 
 
 def create_numbered_backup(original_path: Path):

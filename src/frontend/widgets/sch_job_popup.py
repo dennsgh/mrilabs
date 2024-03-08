@@ -27,6 +27,9 @@ from frontend.tasks.task_validator import Validator
 from frontend.tasks.tasks import TaskName, get_tasks
 from frontend.widgets.sch_parameters import ParameterConfiguration
 from scheduler.timekeeper import Timekeeper
+from utils.logging import get_logger
+
+logger = get_logger()
 
 
 class JobConfigPopup(QDialog):
@@ -291,7 +294,7 @@ class JobConfigPopup(QDialog):
             self.callback()
             super().accept()
         except Exception as e:
-            print({f"Error during commissioning job on : {e}"})
+            logger.info({f"Error during commissioning job on : {e}"})
 
     def getDateTimeFromInputs(self):
         if self.timeConfigComboBox.currentText() == TIMESTAMP_KEYWORD:

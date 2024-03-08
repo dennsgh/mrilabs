@@ -314,12 +314,12 @@ class EDUX1002AMockInterface(Interface):
         # Create a MagicMock instance to simulate a pyvisa.Resource
         mock_resource = MagicMock()
         mock_resource.timeout = None  # Set default value for timeout attribute
-
         super().__init__(mock_resource)
         self.state = {
             ":WAVeform:DATA?": "Mocked Waveform Data",
             ":SYSTem:ERRor?": "No error",
         }
+        self.debug = True
 
     def write(self, command: str) -> None:
         # Use the mocked write method

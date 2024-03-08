@@ -29,12 +29,14 @@ from scheduler.timekeeper import Timekeeper
 from scheduler.worker import Worker
 from utils.logging import get_logger
 
+logger = get_logger()
+
 # Before creating your application instance
 QLocale.setDefault(QLocale(QLocale.Language.English, QLocale.Country.UnitedStates))
 
 
 def signal_handler(signum, frame):
-    print("Exit signal detected.")
+    logger.info("Exit signal detected.")
     # Invoke the default SIGINT handler to exit the application
     signal.signal(signum, signal.SIG_DFL)
     os.kill(os.getpid(), signum)
@@ -135,7 +137,7 @@ class MainWindow(ModularMainWindow):
         page_widget: QWidget = self.sidebar_dict.get(page_name)
         if page_widget and self.last_page != page_name:
             self.sidebar_content.setCurrentWidget(page_widget)
-            print(f"[Sidebar] Switch event to {page_name}")
+            # logger.info(f"[Sidebar] Switch event to {page_name}")
             page_widget.update()
             self.last_page = page_name
 
@@ -145,7 +147,7 @@ class MainWindow(ModularMainWindow):
             page_obj.update()
 
     def closeEvent(self, event):
-        print("main x exit button was clicked")
+        logger.info("main x exit button was clicked")
         factory.worker.stop_worker()
         super().closeEvent(event)
 
@@ -173,7 +175,7 @@ def create_app(args_dict: dict) -> (QApplication, MainWindow):
 
     window.setWindowTitle("mrilabs")
     window.resize(640, 400)
-    print("Window size after resize:", window.size())
+    logger.info(f"Window size after resize: {window.size()} ")
     return app, window
 
 
@@ -187,7 +189,7 @@ def run_application():
 
     args = parser.parse_args()
     args_dict = vars(args)
-    print(args_dict)
+    logger.info(args_dict)
     app, window = create_app(args_dict)
     window.show()
     app.exec()

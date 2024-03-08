@@ -23,6 +23,8 @@ from frontend.tasks.task_validator import Validator
 from frontend.widgets.ui_factory import UIComponentFactory
 from utils.logging import get_logger
 
+logger = get_logger()
+
 
 class ExperimentConfiguration(QWidget):
     """
@@ -48,12 +50,11 @@ class ExperimentConfiguration(QWidget):
             task_enum: An enumeration representing the valid task types. Defaults to None.
         """
         super().__init__(parent)
+        self.__safe__ = True
         self.logger = logger or get_logger()
         self.task_functions: dict[str, Callable] = task_functions
         self.task_enum: Enum = task_enum
         self.experiment: Experiment | None = None
-        self.updated_experiment: dict = None
-        self.is_validated: bool = False
         self.validator = Validator(
             task_functions=self.task_functions, task_enum=self.task_enum
         )
@@ -62,7 +63,6 @@ class ExperimentConfiguration(QWidget):
     def initUI(self):
         # Main horizontal layout
         self.mainHLayout = QHBoxLayout(self)
-
         # Left vertical layout for tabs and configuration details
         self.leftVLayout = QVBoxLayout()
         self.tabWidget = QTabWidget(self)
@@ -112,37 +112,38 @@ class ExperimentConfiguration(QWidget):
         self.updateYamlDisplay()
 
     def updateYamlDisplay(self):
+        if self.__safe__:
+            self.__updateYamlDisplay()
+
+    def __updateYamlDisplay(self):
         currentTabIndex = self.tabWidget.currentIndex()
         if currentTabIndex != -1:
-            self.getUserData()  # force update
-            step_config = self.updated_experiment.steps[currentTabIndex]
+            step_config = self.getUserData().steps[currentTabIndex]
             yamlStr = yaml.dump(step_config.model_dump(), sort_keys=False)
             self.yamlDisplayWidget.setText(yamlStr)
 
     def loadConfiguration(self, config_path: str):
 
         with open(config_path, "r") as file:
-            self.is_validated = False
             raw_dict = yaml.safe_load(file)
 
         if not raw_dict:
             QMessageBox.warning(self, "Error", "No configuration loaded.")
             return False, "No configuration loaded.", {}
 
-        self.experiment = ExperimentWrapper(**raw_dict).experiment
-        overall_valid, message_dict, highest_error_level = self.validate(
-            self.experiment
-        )
+        raw_exp = ExperimentWrapper(**raw_dict).experiment
+        overall_valid, message_dict, highest_error_level = self.validate(raw_exp)
         descriptionText = self.errorHandling(
             overall_valid, message_dict, highest_error_level
         )  # determine the description text.
 
         self.descriptionWidget.setText(descriptionText)
         if overall_valid:
+            self.__safe__ = False
+            self.experiment = raw_exp
             self.displayExperimentDetails()
-            self.is_validated = True
             self.update()
-
+            self.__safe__ = True
             return True, "Configuration loaded successfully."
         else:
             return False, "Failed to load or parse the configuration."
@@ -162,11 +163,6 @@ class ExperimentConfiguration(QWidget):
                         highest_error_level = error_level
                 else:
                     message_dict["infos"].append(f"{task_name}: {message}")
-
-            # This will now include success messages as well
-            self.logger.info(
-                f"Validation for experiment '{experiment.name}' completed."
-            )
             return overall_valid, message_dict, highest_error_level
         except ValidationError as e:
             self.logger.error(f"Validation error: {str(e)}")
@@ -225,6 +221,7 @@ class ExperimentConfiguration(QWidget):
                         self, "Warning", f"At step {index} [{step}]:{err}"
                     )
         self.layout().update()
+        self.__updateYamlDisplay()
 
     def createTaskTab(self, task: Task) -> bool:
         """
@@ -245,7 +242,7 @@ class ExperimentConfiguration(QWidget):
 
         delay = task.delay
         delayWidget = UIComponentFactory.create_widget(
-            DELAY_KEYWORD, delay, float, None, self.updateYamlDisplay
+            DELAY_KEYWORD, delay or 0.0, float, None, lambda: self.updateYamlDisplay()
         )
         delayWidget.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
@@ -290,7 +287,7 @@ class ExperimentConfiguration(QWidget):
                     value,
                     expected_type,
                     specific_constraints,
-                    self.updateYamlDisplay,
+                    lambda: self.updateYamlDisplay(),
                 )
                 widget.setSizePolicy(
                     QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
@@ -327,12 +324,11 @@ class ExperimentConfiguration(QWidget):
 
         # Initialize an empty list to collect Task models
         tasks: List[Task] = []
-        print(type(self.experiment))
         for index in range(self.tabWidget.count()):
             if index >= len(self.experiment.steps):
                 from pprint import pprint
 
-                pprint(self.experiment.steps)
+                plogger.info(self.experiment.steps)
                 continue
 
             step_widget = self.tabWidget.widget(index)
@@ -341,22 +337,27 @@ class ExperimentConfiguration(QWidget):
 
             original_step = self.experiment.steps[index]
             parameters: Dict[str, Any] = {}
-
+            updated_delay = 0.0
             for i in range(form_layout.rowCount()):
                 widget_item = form_layout.itemAt(i, QFormLayout.ItemRole.FieldRole)
                 if widget_item is not None:
                     widget = widget_item.widget()
                     parameter_name = widget.property("parameter_name")
-                    if parameter_name and parameter_name != DELAY_KEYWORD:
-                        parameters[parameter_name] = UIComponentFactory.extract_value(
-                            widget
-                        )
+                    if parameter_name:
+                        # Prevent adding delay directly to the parameters dictionary, bad things will happen : )
+                        if parameter_name == DELAY_KEYWORD:
+                            updated_delay = UIComponentFactory.extract_value(widget)
+                            continue
+                        else:
+                            parameters[parameter_name] = (
+                                UIComponentFactory.extract_value(widget)
+                            )
 
             # Create a Task instance directly using the collected parameters.
             task = Task(
                 task=original_step.task,
                 description=original_step.description,
-                delay=original_step.delay,
+                delay=updated_delay,
                 parameters=parameters,
             )
             tasks.append(task)
@@ -364,13 +365,11 @@ class ExperimentConfiguration(QWidget):
         # Create the Experiment instance with the collected tasks.
         try:
             experiment = Experiment(name=experiment_name, steps=tasks)
-            self.updated_experiment: Experiment = experiment
         except ValidationError as e:
             # Handle validation errors for the experiment.
             QMessageBox.critical(self, "Validation Error", str(e))
-            self.updated_experiment = self.experiment
 
-        return self.updated_experiment
+        return experiment
 
     def getConfiguration(self) -> Experiment:
         """
@@ -383,8 +382,8 @@ class ExperimentConfiguration(QWidget):
             ValueError: If validation of the user-modified configuration fails.
         """
         # Extract the user-modified configuration from the UI elements
-        self.getUserData()
-        return self.updated_experiment
+        updated_experiment = self.getUserData()
+        return updated_experiment
 
     def get_function(self, task: Task) -> object | None:
         """

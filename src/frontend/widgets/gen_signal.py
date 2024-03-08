@@ -1,9 +1,6 @@
 from datetime import datetime
 
 import pyqtgraph as pg
-from frontend.header import NOT_FOUND_STRING
-from frontend.managers.dg4202 import DG4202Manager
-from frontend.pages import plotter
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QComboBox,
@@ -20,6 +17,12 @@ from PyQt6.QtWidgets import (
 )
 
 from device.dg4202 import DG4202
+from frontend.header import NOT_FOUND_STRING
+from frontend.managers.dg4202 import DG4202Manager
+from frontend.pages import plotter
+from utils.logging import get_logger
+
+logger = get_logger()
 
 
 class DG4202SignalGeneratorWidget(QWidget):
@@ -461,7 +464,7 @@ class DG4202SignalGeneratorWidget(QWidget):
                 "HTIME_START": htime_start,
                 "HTIME_STOP": htime_stop,
             }
-            print(params)
+            logger.info(params)
             self.my_generator.set_sweep_parameters(channel, params)
             self.update_sweep_graph(channel)
 
@@ -479,7 +482,7 @@ class DG4202SignalGeneratorWidget(QWidget):
                 == "ON"
                 else True
             )
-            print(
+            logger.info(
                 f'{channel} is {self.all_parameters.get(f"{channel}", {}).get("output_status", "ERR")} -> {set_to}'
             )
             self.my_generator.output_on_off(channel, set_to)
