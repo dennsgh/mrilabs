@@ -1,6 +1,7 @@
 experiment:
   steps:
   - task: DG4202_SET_WAVEFORM
+    description: This will run immediately
     delay: 0.0
     parameters:
       channel: 1

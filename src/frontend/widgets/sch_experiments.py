@@ -1,16 +1,8 @@
 import inspect
 from enum import Enum
-from typing import Callable
+from typing import Any, Callable, Dict, List
 
 import yaml
-from frontend.header import DELAY_KEYWORD, EXPERIMENT_KEYWORD, ErrorLevel
-from frontend.tasks.model import Experiment, Task
-from frontend.tasks.task_validator import (
-    get_function_to_validate,
-    get_task_enum_value,
-    validate_configuration,
-)
-from frontend.widgets.ui_factory import UIComponentFactory
 from pydantic import ValidationError
 from PyQt6.QtWidgets import (
     QFormLayout,
@@ -24,6 +16,12 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
+from frontend.header import DELAY_KEYWORD, ErrorLevel
+from frontend.tasks.model import Experiment, ExperimentWrapper, Task
+from frontend.tasks.task_validator import Validator
+from frontend.widgets.ui_factory import UIComponentFactory
+from utils.logging import get_logger
 
 
 class ExperimentConfiguration(QWidget):
@@ -39,6 +37,7 @@ class ExperimentConfiguration(QWidget):
         parent: QWidget | None = None,
         task_functions: dict[str, object] | None = None,
         task_enum: Enum | None = None,
+        logger=None,
     ) -> None:
         """
         Initializes the widget.
@@ -49,10 +48,15 @@ class ExperimentConfiguration(QWidget):
             task_enum: An enumeration representing the valid task types. Defaults to None.
         """
         super().__init__(parent)
+        self.logger = logger or get_logger()
         self.task_functions: dict[str, Callable] = task_functions
         self.task_enum: Enum = task_enum
-        self.config: dict[str, object] | None = None
-        self.updated_config: dict = None
+        self.experiment: Experiment | None = None
+        self.updated_experiment: dict = None
+        self.is_validated: bool = False
+        self.validator = Validator(
+            task_functions=self.task_functions, task_enum=self.task_enum
+        )
         self.initUI()
 
     def initUI(self):
@@ -108,61 +112,65 @@ class ExperimentConfiguration(QWidget):
         self.updateYamlDisplay()
 
     def updateYamlDisplay(self):
-        # Automatically grab the current tab index if needed or work with the updated_config
-
         currentTabIndex = self.tabWidget.currentIndex()
         if currentTabIndex != -1:
-            self.getUserData()  # Ensure the updated_config is current
-            step_config = self.updated_config[EXPERIMENT_KEYWORD]["steps"][
-                currentTabIndex
-            ]
-            yamlStr = yaml.dump(step_config, sort_keys=False)
+            self.getUserData()  # force update
+            step_config = self.updated_experiment.steps[currentTabIndex]
+            yamlStr = yaml.dump(step_config.model_dump(), sort_keys=False)
             self.yamlDisplayWidget.setText(yamlStr)
 
-    def loadConfiguration(self, config_path):
-        valid, message, descriptionText = self.loadValidate(config_path)
-        self.descriptionWidget.setText(descriptionText)
+    def loadConfiguration(self, config_path: str):
 
-        if valid:
+        with open(config_path, "r") as file:
+            self.is_validated = False
+            raw_dict = yaml.safe_load(file)
+
+        if not raw_dict:
+            QMessageBox.warning(self, "Error", "No configuration loaded.")
+            return False, "No configuration loaded.", {}
+
+        self.experiment = ExperimentWrapper(**raw_dict).experiment
+        overall_valid, message_dict, highest_error_level = self.validate(
+            self.experiment
+        )
+        descriptionText = self.errorHandling(
+            overall_valid, message_dict, highest_error_level
+        )  # determine the description text.
+
+        self.descriptionWidget.setText(descriptionText)
+        if overall_valid:
             self.displayExperimentDetails()
+            self.is_validated = True
             self.update()
+
             return True, "Configuration loaded successfully."
         else:
             return False, "Failed to load or parse the configuration."
 
-    def validate(self, data: dict) -> tuple[bool, list[str], ErrorLevel]:
-        """
-        Validates the provided experiment configuration data.
+    def validate(self, experiment: Experiment) -> tuple[bool, dict, ErrorLevel]:
+        try:
+            validation_results = self.validator.validate_configuration(experiment)
+            message_dict = {"errors": [], "warnings": [], "infos": []}
+            overall_valid = True
+            highest_error_level = ErrorLevel.INFO
 
-        Checks for various errors and inconsistencies in the configuration based on pre-defined rules.
-
-        Args:
-            data: The experiment configuration data in dictionary format.
-
-        Returns:
-            A tuple containing three elements:
-                - A boolean indicating whether the configuration is valid.
-                - A list of error messages if the configuration is invalid.
-                - The highest encountered error level (INFO, BAD_CONFIG, INVALID_YAML).
-        """
-        overall_valid = True
-        highest_error_level = ErrorLevel.INFO  # Assume the lowest severity to start
-        validation_results = validate_configuration(
-            data, self.task_functions, self.task_enum
-        )
-        message_dict = {"errors": [], "warnings": [], "infos": []}
-        for task_name, is_valid, message, error_level in validation_results:
-            if not is_valid:
-                overall_valid = False
-                if error_level.value > highest_error_level.value:
-                    highest_error_level = error_level
-                message_dict["errors"].append(f"{task_name}: {message}")
-            else:
-                # Check if message contains more than just "Validation issues: "
-                if message.strip() != "Validation issues:":
+            for task_name, is_valid, message, error_level in validation_results:
+                if not is_valid:
+                    overall_valid = False
+                    message_dict["errors"].append(f"{task_name}: {message}")
+                    if error_level.value > highest_error_level.value:
+                        highest_error_level = error_level
+                else:
                     message_dict["infos"].append(f"{task_name}: {message}")
 
-        return overall_valid, message_dict, highest_error_level
+            # This will now include success messages as well
+            self.logger.info(
+                f"Validation for experiment '{experiment.name}' completed."
+            )
+            return overall_valid, message_dict, highest_error_level
+        except ValidationError as e:
+            self.logger.error(f"Validation error: {str(e)}")
+            return False, {"errors": [str(e)]}, ErrorLevel.INVALID_YAML
 
     def errorHandling(
         self, overall_valid: bool, message_dict: dict, highest_error_level: ErrorLevel
@@ -184,32 +192,15 @@ class ExperimentConfiguration(QWidget):
 
         if overall_valid or highest_error_level == ErrorLevel.INFO:
             descriptionText = (
-                self.generate_experiment_summary(self.config) + "\n" + descriptionText
+                self.generate_experiment_summary(self.experiment)
+                + "\n"
+                + descriptionText
             )
 
         return descriptionText
 
-    def loadValidate(self, config_path: str) -> None:
-        """
-        Loads and displays an experiment configuration or handles any errors encountered.
-
-        Performs loading, validation, and displays the results or error messages.
-
-        Args:
-            config_path: The path to the YAML file containing the configuration.
-        """
-        with open(config_path, "r") as file:
-            self.config = yaml.safe_load(file)
-        if not self.config:
-            QMessageBox.warning(self, "Error", "No configuration loaded.")
-            return False, "No configuration loaded.", {}
-
-        overall_valid, message_dict, highest_error_level = self.validate(self.config)
-        descriptionText = self.errorHandling(
-            overall_valid, message_dict, highest_error_level
-        )
-
-        return overall_valid, message_dict, descriptionText
+    def get_experiment(self):
+        return self.experiment
 
     def displayExperimentDetails(self) -> None:
         """
@@ -220,12 +211,12 @@ class ExperimentConfiguration(QWidget):
 
         Raises a warning message if no configuration is loaded.
         """
-        if not self.config:
+        if not self.experiment:
             QMessageBox.warning(self, "Error", "No configuration loaded.")
             return
 
         self.tabWidget.clear()
-        steps = self.config.get(EXPERIMENT_KEYWORD, {}).get("steps", [])
+        steps = self.experiment.steps
         if steps:
             for index, step in enumerate(steps, start=1):
                 valid, err = self.createTaskTab(step)
@@ -235,7 +226,7 @@ class ExperimentConfiguration(QWidget):
                     )
         self.layout().update()
 
-    def createTaskTab(self, task: dict) -> bool:
+    def createTaskTab(self, task: Task) -> bool:
         """
         Generates a tab with a form layout for each step, allowing users to
         interact with the step parameters.
@@ -252,7 +243,7 @@ class ExperimentConfiguration(QWidget):
         formWidget = QWidget()
         formLayout = QFormLayout()
 
-        delay = task.get(DELAY_KEYWORD, 0.0)
+        delay = task.delay
         delayWidget = UIComponentFactory.create_widget(
             DELAY_KEYWORD, delay, float, None, self.updateYamlDisplay
         )
@@ -262,7 +253,7 @@ class ExperimentConfiguration(QWidget):
         formLayout.addRow(QLabel(f"{DELAY_KEYWORD} (s):"), delayWidget)
         formWidget.setLayout(formLayout)
         try:
-            task_function = self.get_function(task.get("task"))
+            task_function = self.get_function(task.task)
             if not task_function:
                 return (
                     False,
@@ -277,12 +268,14 @@ class ExperimentConfiguration(QWidget):
             parameter_annotations = getattr(task_function, "parameter_annotations", {})
             parameter_constraints = getattr(task_function, "parameter_constraints", {})
             # Initialize a dictionary to store the task parameters from the configuration
-            task_parameters = task.get("parameters", {})
+            task_parameters = task.parameters
 
             # trunk-ignore(ruff/B007)
             for parameter_name, param in sig.parameters.items():
                 value = task_parameters.get(parameter_name, None)
-                expected_type = param_types.get(parameter_name, str)
+                expected_type = param_types.get(
+                    parameter_name, str
+                )  # Defaults to string.
                 # The units are embedded on the annotations for each parameter where applicable (if exist)
                 param_unit = (
                     f"({parameter_annotations.get(parameter_name)})"
@@ -311,7 +304,7 @@ class ExperimentConfiguration(QWidget):
 
             scrollArea.setWidget(formWidget)
             self.tabWidget.addTab(
-                tab, get_task_enum_value(task.get("task"), self.task_enum)
+                tab, Validator.get_task_enum_value(task.task, self.task_enum)
             )
             layout.addStretch(1)
             scrollArea.setSizePolicy(
@@ -324,88 +317,62 @@ class ExperimentConfiguration(QWidget):
         except Exception as e:
             return False, f"{e}"
 
-    def getUserData(self) -> dict:
-        if (
-            not self.config
-            or EXPERIMENT_KEYWORD not in self.config
-            or "steps" not in self.config[EXPERIMENT_KEYWORD]
-        ):
+    def getUserData(self) -> Experiment:
+        if not self.experiment:
             QMessageBox.warning(self, "Error", "No valid configuration loaded.")
             return {}
 
-        if self.updated_config is None:
-            self.updated_config = {
-                EXPERIMENT_KEYWORD: {
-                    "description": "",
-                    "name": self.config.get(EXPERIMENT_KEYWORD, {}).get(
-                        "name", "Unnamed Experiment"
-                    ),
-                    "steps": [],
-                }
-            }
+        # Extract the name from the configuration to use in the new experiment model
+        experiment_name = self.experiment.name
 
-        self.updated_config[EXPERIMENT_KEYWORD][
-            "steps"
-        ].clear()  # Clear existing steps to repopulate
-
-        steps = []
+        # Initialize an empty list to collect Task models
+        tasks: List[Task] = []
+        print(type(self.experiment))
         for index in range(self.tabWidget.count()):
+            if index >= len(self.experiment.steps):
+                from pprint import pprint
+
+                pprint(self.experiment.steps)
+                continue
+
             step_widget = self.tabWidget.widget(index)
             form_widget = step_widget.findChild(QScrollArea).widget()
             form_layout = form_widget.layout()
 
-            original_step = self.config[EXPERIMENT_KEYWORD]["steps"][index]
-            parameters = {}
+            original_step = self.experiment.steps[index]
+            parameters: Dict[str, Any] = {}
 
-            # Initialize delay_seconds and at_time with None, update if found
-            delay = 0
-
-            # Extract parameters from form
             for i in range(form_layout.rowCount()):
                 widget_item = form_layout.itemAt(i, QFormLayout.ItemRole.FieldRole)
                 if widget_item is not None:
                     widget = widget_item.widget()
                     parameter_name = widget.property("parameter_name")
-                    if parameter_name:
-                        param_value = UIComponentFactory.extract_value(widget)
-                        if parameter_name == DELAY_KEYWORD:
-                            delay = param_value
-                        else:
-                            parameters[parameter_name] = param_value
+                    if parameter_name and parameter_name != DELAY_KEYWORD:
+                        parameters[parameter_name] = UIComponentFactory.extract_value(
+                            widget
+                        )
 
-            # Create a Task instance, incorporating validation
-            try:
-                task = Task(
-                    task=original_step.get("task"),
-                    description=original_step.get("description", ""),
-                    delay=delay,
-                    parameters=parameters,
-                )
-                steps.append(
-                    task.dict()
-                )  # Convert Pydantic model to dict for the final configuration
-            except ValidationError as e:
-                # Handle validation errors (e.g., show a message to the user)
-                print(f"Validation error in step {index}: {e}")
-
-        # Create the Experiment instance
-        try:
-            experiment = Experiment(
-                name=self.config.get(EXPERIMENT_KEYWORD, {}).get(
-                    "name", "Unnamed Experiment"
-                ),
-                steps=steps,
+            # Create a Task instance directly using the collected parameters.
+            task = Task(
+                task=original_step.task,
+                description=original_step.description,
+                delay=original_step.delay,
+                parameters=parameters,
             )
-            # Convert the entire Experiment model to dict
-            self.updated_config = {EXPERIMENT_KEYWORD: experiment.dict()}
+            tasks.append(task)
+
+        # Create the Experiment instance with the collected tasks.
+        try:
+            experiment = Experiment(name=experiment_name, steps=tasks)
+            self.updated_experiment: Experiment = experiment
         except ValidationError as e:
-            # Handle validation errors for the experiment
-            print(f"Validation error in experiment configuration: {e}")
-            self.updated_config = {}
+            # Handle validation errors for the experiment.
+            QMessageBox.critical(self, "Validation Error", str(e))
+            self.updated_experiment = self.experiment
 
-            return
+        return self.updated_experiment
 
-    def getConfiguration(self) -> dict:
+    def getConfiguration(self) -> Experiment:
         """
         Collects the user-modified configuration from the UI and performs validation.
 
@@ -417,19 +384,7 @@ class ExperimentConfiguration(QWidget):
         """
         # Extract the user-modified configuration from the UI elements
         self.getUserData()
-
-        # Validate the extracted data
-        overall_valid, messages, highest_error_level = self.validate(
-            self.updated_config
-        )
-        descriptionText = self.errorHandling(
-            overall_valid, messages, highest_error_level
-        )
-        if not overall_valid:
-            self.descriptionWidget.setText(descriptionText)
-            raise ValueError("Configuration validation failed.")
-
-        return self.updated_config
+        return self.updated_experiment
 
     def get_function(self, task: str) -> object | None:
         """
@@ -443,21 +398,22 @@ class ExperimentConfiguration(QWidget):
         Returns:
             The function associated with the task or None if not found.
         """
-        return get_function_to_validate(task, self.task_functions, self.task_enum)
+        return self.validator.get_function_to_validate(
+            task, self.task_functions, self.task_enum
+        )
 
-    def generate_experiment_summary(self, data: dict):
-        if not data or EXPERIMENT_KEYWORD not in data:
+    def generate_experiment_summary(self, data: Experiment):
+        if not data:
             return "No experiment configuration loaded."
 
-        experiment_data = data[EXPERIMENT_KEYWORD]
-        experiment_name = experiment_data.get("name", "Unnamed Experiment")
-        steps = experiment_data.get("steps", [])
+        experiment_name = data.name
+        steps = data.steps
 
         summary_lines = [f"Experiment: {experiment_name}\n\nSteps Summary:"]
 
         for i, step in enumerate(steps, 1):
-            task_name = step.get("task", "Unknown Task")
-            description = step.get("description", "No description provided.")
+            task_name = step.task
+            description = step.description
             summary_lines.append(f"  Step {i}: {task_name} - {description}")
 
         return "\n".join(summary_lines)

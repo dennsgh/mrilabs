@@ -2,10 +2,6 @@ from datetime import datetime, timedelta
 from typing import Callable
 
 import yaml
-from frontend.header import DELAY_KEYWORD, TASKS_MISSING, TIMESTAMP_KEYWORD
-from frontend.tasks.task_validator import get_task_enum_name
-from frontend.tasks.tasks import TaskName, get_tasks
-from frontend.widgets.sch_parameters import ParameterConfiguration
 from PyQt6 import QtCore
 from PyQt6.QtWidgets import (
     QComboBox,
@@ -25,6 +21,11 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from frontend.header import DELAY_KEYWORD, TASKS_MISSING, TIMESTAMP_KEYWORD
+from frontend.tasks.model import Experiment, Task
+from frontend.tasks.task_validator import Validator
+from frontend.tasks.tasks import TaskName, get_tasks
+from frontend.widgets.sch_parameters import ParameterConfiguration
 from scheduler.timekeeper import Timekeeper
 
 
@@ -32,7 +33,7 @@ class JobConfigPopup(QDialog):
 
     def __init__(self, timekeeper: Timekeeper, callback: Callable):
         super().__init__()
-        self.resize(800, 320)
+        self.resize(864, 400)
         self.task_dict = get_tasks(flatten=False)
         self.task_enum = TaskName
         self.timekeeper = timekeeper
@@ -115,33 +116,39 @@ class JobConfigPopup(QDialog):
         parameters = self.parameterConfig.getConfiguration()
         now = datetime.now()
 
-        if self.timeConfigComboBox.currentText() == TIMESTAMP_KEYWORD:
+        if (
+            self.timeConfigComboBox.currentText() == "TIMESTAMP"
+        ):  # Assuming TIMESTAMP_KEYWORD is "TIMESTAMP"
             schedule_time = self.getDateTimeFromInputs()
             # Calculate the delay as the difference between the schedule time and now
-            delay = schedule_time - now
+            delay = (schedule_time - now).total_seconds()
         else:
             # Directly use the delay from the inputs if "delay" is selected
-            delay = self.getDateTimeFromInputs() - now
+            delay = (self.getDateTimeFromInputs() - now).total_seconds()
 
         # Ensure delay is always positive before displaying
-        if delay.total_seconds() < 0:
-            delay = timedelta(seconds=0)  # Reset to 0 if negative
+        delay = max(0, delay)  # Reset to 0 if negative
 
-        config = {
-            "experiment": {
-                "steps": [
-                    {
-                        "task": get_task_enum_name(
-                            self.taskSelect.currentText(), TaskName
-                        ),
-                        DELAY_KEYWORD: delay.total_seconds(),
-                        "description": f"{self.taskSelect.currentText()} at time {delay.total_seconds()}s",
-                        "parameters": parameters,
-                    }
-                ]
-            }
-        }
-        yamlStr = yaml.dump(config, sort_keys=False, default_flow_style=False)
+        # Use the Task and Experiment models to create the configuration
+        task_name = Validator.get_task_enum_name(
+            self.taskSelect.currentText(),
+            self.task_enum,  # Assuming you have task_enum available
+        )
+
+        task = Task(
+            task=task_name,
+            delay=delay,
+            description=f"{self.taskSelect.currentText()} at time {delay}s",
+            parameters=parameters,
+        )
+
+        # Wrap the task in an Experiment model
+        experiment = Experiment(name=,steps=[task])
+
+        # Convert the Experiment model instance to YAML string for display
+        yamlStr = yaml.dump(
+            experiment.dict(), sort_keys=False, default_flow_style=False
+        )
         self.yamlDisplayWidget.setText(yamlStr)
 
     def updateTimeConfigurationVisibility(self, selection):

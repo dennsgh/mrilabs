@@ -2,6 +2,7 @@ import inspect
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from PyQt6.QtWidgets import QHBoxLayout, QLabel, QStackedWidget, QVBoxLayout, QWidget
+
 from frontend.widgets.ui_factory import (  # Assuming custom import, details unknown
     UIComponentFactory,
 )
@@ -38,11 +39,9 @@ class ParameterConfiguration(QWidget):
         self.initUI()
 
     def initUI(self):
-        self.stacked_widget: QStackedWidget = QStackedWidget(self)
-        self.main_layout: QVBoxLayout = QVBoxLayout(self)
+        self.stacked_widget = QStackedWidget()
+        self.main_layout = QVBoxLayout()
         self.main_layout.addWidget(self.stacked_widget)
-        self.mainHLayout = QHBoxLayout(self)
-        self.mainHLayout.addLayout(self.main_layout)
         self.setLayout(self.main_layout)
 
     def updateUI(self, device: str, task_name: str) -> None:

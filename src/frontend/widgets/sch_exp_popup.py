@@ -1,10 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Callable
 
-from frontend.header import DELAY_KEYWORD, EXPERIMENT_KEYWORD
-from frontend.tasks.task_validator import get_task_enum_value, is_in_enum
-from frontend.tasks.tasks import TaskName, get_tasks
-from frontend.widgets.sch_experiments import ExperimentConfiguration
 from PyQt6 import QtCore
 from PyQt6.QtWidgets import (
     QDialog,
@@ -19,6 +15,10 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
 )
 
+from frontend.header import DELAY_KEYWORD, EXPERIMENT_KEYWORD
+from frontend.tasks.task_validator import Validator
+from frontend.tasks.tasks import TaskName, get_tasks
+from frontend.widgets.sch_experiments import ExperimentConfiguration
 from scheduler.timekeeper import Timekeeper
 
 
@@ -67,7 +67,7 @@ class ExperimentConfigPopup(QDialog):
 
     def showDefaultMessage(self):
         # Show a default message or the experiment configuration UI based on the state
-        if not self.experiment_config.config:  # No config loaded
+        if not self.experiment_config.get_experiment():  # No config loaded
             defaultMsgWidget = QLabel(
                 "Please load a configuration file to begin.", self
             )
@@ -84,7 +84,7 @@ class ExperimentConfigPopup(QDialog):
         if fileName:
             self.loadConfiguration(fileName)
 
-    def loadConfiguration(self, config_path):
+    def loadConfiguration(self, config_path: str):
         # Load and validate configuration, then switch to the configuration UI
         try:
             valid, message = self.experiment_config.loadConfiguration(config_path)
@@ -106,19 +106,15 @@ class ExperimentConfigPopup(QDialog):
         """
         Commits the experiment configuration to schedule tasks based on the user's input.
         """
-        steps = (
-            self.experiment_config.getConfiguration()
-            .get(EXPERIMENT_KEYWORD, {})
-            .get("steps", [])
-        )
+        steps = self.experiment_config.getConfiguration().steps
 
         for step in steps:
-            step_delay = timedelta(seconds=step.get(DELAY_KEYWORD, 0))
-            task_str: str = step.get("task")
-            parameters = step.get("parameters", {})
-            task_name_str = get_task_enum_value(task_str, self.task_enum)
+            step_delay = timedelta(seconds=step.delay if step.delay else 0.0)
+            task_str: str = step.task
+            parameters = step.parameters
+            task_name_str = Validator.get_task_enum_value(task_str, self.task_enum)
             # Assuming 'TaskName' can resolve both names and values to an Enum member
-            if not is_in_enum(task_str.strip(), self.task_enum):
+            if not Validator.is_in_enum(task_str.strip(), self.task_enum):
                 QMessageBox.critical(
                     self, "Error Scheduling Task", f"Unknown task: '{task_name_str}'"
                 )
