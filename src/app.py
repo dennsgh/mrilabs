@@ -4,9 +4,13 @@ import signal
 from pathlib import Path
 from typing import Dict
 
-from utils.logging import get_logger
+os.environ["PYQTGRAPH_QT_LIB"] = "PyQt6"
 import pyvisa
 import qdarktheme
+from PyQt6.QtCore import QLocale
+from PyQt6.QtGui import QGuiApplication, QIcon
+from PyQt6.QtWidgets import QApplication, QStackedWidget, QWidget
+
 from frontend.header import OSCILLOSCOPE_BUFFER_SIZE, DeviceName
 from frontend.managers.dg4202 import DG4202Manager
 from frontend.managers.edux1002a import EDUX1002AManager
@@ -20,13 +24,11 @@ from frontend.tasks.tasks import get_tasks
 from frontend.widgets.menu import MainMenuBar
 from frontend.widgets.sidebar import Sidebar
 from frontend.widgets.templates import ModularMainWindow
-from PyQt6.QtCore import QLocale
-from PyQt6.QtGui import QGuiApplication, QIcon
-from PyQt6.QtWidgets import QApplication, QStackedWidget, QWidget
-
+from scheduler import registry
 from scheduler.timekeeper import Timekeeper
 from scheduler.worker import Worker
-from scheduler import registry
+from utils.logging import get_logger
+
 # Before creating your application instance
 QLocale.setDefault(QLocale(QLocale.Language.English, QLocale.Country.UnitedStates))
 
@@ -60,7 +62,7 @@ def init_objects(args_dict: dict):
     factory.timekeeper = Timekeeper(
         persistence_file=factory.TIMEKEEPER_JOBS_FILE,
         worker_instance=factory.worker,
-        logger=logger
+        logger=logger,
     )
 
     for task_name, func_pointer in get_tasks(flatten=True).items():

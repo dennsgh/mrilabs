@@ -1,10 +1,8 @@
 import sys
 
-import frontend.header as header
 import numpy as np
+import PyQt6.QtCore as QtCore
 import pyqtgraph as pg
-from frontend.header import TICK_INTERVAL
-from frontend.managers.edux1002a import EDUX1002AManager
 from PyQt6.QtWidgets import (
     QApplication,
     QDoubleSpinBox,
@@ -15,6 +13,10 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
+import frontend.header as header
+from frontend.header import TICK_INTERVAL
+from frontend.managers.edux1002a import EDUX1002AManager
 
 
 class EDUX1002AOscilloscopeWidget(QWidget):
@@ -33,7 +35,7 @@ class EDUX1002AOscilloscopeWidget(QWidget):
         self.y_input = {1: None, 2: None}
         self.initUI()
         # Timer setup for real-time data update
-        self.timer = pg.QtCore.QTimer()
+        self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.update_data)
         self.configuration()
         self.timer.stop()
