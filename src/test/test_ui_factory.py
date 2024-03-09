@@ -9,7 +9,8 @@ from PyQt6.QtWidgets import (
     QLineEdit,
     QSpinBox,
 )
-from frontend.widgets.ui_factory import UIComponentFactory
+
+from mrilabs.frontend.widgets.ui_factory import UIComponentFactory
 
 
 class TestUIComponentFactory:

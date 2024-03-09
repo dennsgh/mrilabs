@@ -1,7 +1,7 @@
 from unittest.mock import Mock, patch
 
-from device.device import Device, DeviceDetector
-from device.interface import EthernetInterface, USBInterface
+from mrilabs.device.device import Device, DeviceDetector
+from mrilabs.device.interface import EthernetInterface, USBInterface
 
 
 class GenericDevice(Device):
@@ -36,9 +36,7 @@ def test_detect_device_with_usb_resource(mock_resource_manager):
     mock_device.query.return_value = "Manufacturer,Generic Device ID,Serial,Version"
 
     # Simulate a device resource list that includes a USB resource
-    mock_rm.list_resources.return_value = [
-        "USB0::0x1234::0x5678::SN12345::0::INSTR"
-    ]
+    mock_rm.list_resources.return_value = ["USB0::0x1234::0x5678::SN12345::0::INSTR"]
     mock_rm.open_resource.return_value = mock_device
 
     detector = DeviceDetector(mock_rm, GenericDevice)

@@ -2,7 +2,7 @@ from unittest.mock import Mock, call
 
 import pytest
 
-from device.dg4202 import DG4202
+from mrilabs.device.dg4202 import DG4202
 
 
 @pytest.fixture
@@ -37,8 +37,7 @@ def test_set_waveform(mock_interface):
         device.set_waveform(channel=channel, frequency=1000)
 
         # Assert: Verify the call to set frequency was made
-        mock_interface.write.assert_called_with(
-            f"SOURce{channel}:FREQuency:FIXed 1000")
+        mock_interface.write.assert_called_with(f"SOURce{channel}:FREQuency:FIXed 1000")
 
 
 def test_turn_off_modes(mock_interface):
@@ -86,8 +85,7 @@ def test_set_mode(mock_interface):
     for channel in range(1, 3):  # Assuming channels 1 and 2
         for mode, command in mode_to_command.items():
             device.set_mode(channel=channel, mode=mode)
-            mock_interface.write.assert_called_with(
-                f"SOURce{channel}:{command}")
+            mock_interface.write.assert_called_with(f"SOURce{channel}:{command}")
             # Reset mock calls for the next iteration
             mock_interface.write.reset_mock()
 

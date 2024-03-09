@@ -2,8 +2,8 @@ import signal
 
 from dotenv import load_dotenv
 
-from app import run_application, signal_handler
-from utils.logging import get_logger
+from mrilabs.app import run_application, signal_handler
+from mrilabs.utils.logging import get_logger
 
 logger = get_logger()
 if __name__ == "__main__":

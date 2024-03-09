@@ -4,8 +4,8 @@
 # import pytest
 # import requests
 
-# from api.dg4202_api import DG4202APIServer
-# from device.dg4202 import DG4202, DG4202Mock
+# from mrilabs.api.dg4202_api import DG4202APIServer
+# from mrilabs.device.dg4202 import DG4202, DG4202Mock
 
 # endpoint = "http://localhost:5000/api"
 
