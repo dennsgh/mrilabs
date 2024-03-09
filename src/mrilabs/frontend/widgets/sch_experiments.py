@@ -150,10 +150,10 @@ class ExperimentConfiguration(QWidget):
             return True, "Configuration loaded successfully."
         else:
             logger.warning(f"{config_path} was unable to be parsed.")
-            logger.info(
+            logger.warning(
                 f"{highest_error_level.value} error level: {highest_error_level.name}"
             )
-            logger.info(
+            logger.warning(
                 "\n".join([f"{key} : {value}" for key, value in message_dict.items()])
             )
             return False, "Failed to load or parse the configuration."
