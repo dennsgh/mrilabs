@@ -1,4 +1,5 @@
 import inspect
+import traceback
 from enum import Enum
 from typing import Any, Callable, Dict, List
 
@@ -129,6 +130,7 @@ class ExperimentConfiguration(QWidget):
 
         if not raw_dict:
             QMessageBox.warning(self, "Error", "No configuration loaded.")
+            logger.warning(f"No configuration loaded at {config_path}.")
             return False, "No configuration loaded.", {}
 
         raw_exp = ExperimentWrapper(**raw_dict).experiment
@@ -144,8 +146,16 @@ class ExperimentConfiguration(QWidget):
             self.displayExperimentDetails()
             self.update()
             self.__safe__ = True
+            logger.info(f"{config_path} loaded successfully.")
             return True, "Configuration loaded successfully."
         else:
+            logger.warning(f"{config_path} was unable to be parsed.")
+            logger.info(
+                f"{highest_error_level.value} error level: {highest_error_level.name}"
+            )
+            logger.info(
+                "\n".join([f"{key} : {value}" for key, value in message_dict.items()])
+            )
             return False, "Failed to load or parse the configuration."
 
     def validate(self, experiment: Experiment) -> tuple[bool, dict, ErrorLevel]:
@@ -165,7 +175,7 @@ class ExperimentConfiguration(QWidget):
                     message_dict["infos"].append(f"{task_name}: {message}")
             return overall_valid, message_dict, highest_error_level
         except ValidationError as e:
-            self.logger.error(f"Validation error: {str(e)}")
+            self.logger.error(f"Validation error: {str(e)} {traceback.format_exc()}")
             return False, {"errors": [str(e)]}, ErrorLevel.INVALID_YAML
 
     def errorHandling(
@@ -312,6 +322,9 @@ class ExperimentConfiguration(QWidget):
             )
             return True, ""
         except Exception as e:
+            logger.error(
+                f"Failed to create task tab: {str(e)} {traceback.format_exc()}"
+            )
             return False, f"{e}"
 
     def getUserData(self) -> Experiment:
@@ -326,9 +339,6 @@ class ExperimentConfiguration(QWidget):
         tasks: List[Task] = []
         for index in range(self.tabWidget.count()):
             if index >= len(self.experiment.steps):
-                from pprint import pprint
-
-                plogger.info(self.experiment.steps)
                 continue
 
             step_widget = self.tabWidget.widget(index)
@@ -368,7 +378,8 @@ class ExperimentConfiguration(QWidget):
         except ValidationError as e:
             # Handle validation errors for the experiment.
             QMessageBox.critical(self, "Validation Error", str(e))
-
+            logger.error(f"Error: {e}")
+            logger.error(f"{traceback.format_exc()}")
         return experiment
 
     def getConfiguration(self) -> Experiment:

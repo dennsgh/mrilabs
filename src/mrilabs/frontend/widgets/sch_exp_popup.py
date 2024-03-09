@@ -94,6 +94,7 @@ class ExperimentConfigPopup(QDialog):
                 self.parametersStack.setCurrentWidget(self.experiment_config)
             else:
                 QMessageBox.warning(self, "Configuration Validation Failed", message)
+                logger.warning(message)
                 self.showDefaultMessage()
         except Exception as e:
             QMessageBox.critical(
@@ -101,6 +102,7 @@ class ExperimentConfigPopup(QDialog):
                 "Configuration Load Failed",
                 f"Failed to load configuration: {str(e)}",
             )
+            logger.error(f"Error: {e} {message}")
             self.showDefaultMessage()
 
     def accept(self):
@@ -119,6 +121,7 @@ class ExperimentConfigPopup(QDialog):
                 QMessageBox.critical(
                     self, "Error Scheduling Task", f"Unknown task: '{task_name_str}'"
                 )
+                logger.error(f"Unknown task: '{task_name_str}'")
                 return
             schedule_time = datetime.now() + step_delay
             try:
@@ -130,6 +133,7 @@ class ExperimentConfigPopup(QDialog):
                     "Error Scheduling Task",
                     f"Failed to schedule '{task_name_str}': {e}",
                 )
+                logger.error(f"Unknown task: '{task_name_str}: {e}'")
                 return  # Stop scheduling further tasks on error
 
         self.callback()  # Trigger any post-scheduling actions

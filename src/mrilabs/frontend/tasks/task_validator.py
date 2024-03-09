@@ -1,4 +1,5 @@
 import inspect
+import traceback
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
@@ -6,6 +7,9 @@ from pydantic import ValidationError
 
 from mrilabs.frontend.header import EXPERIMENT_KEYWORD, ErrorLevel
 from mrilabs.frontend.tasks.model import Experiment, ExperimentWrapper, Task
+from mrilabs.utils.logging import get_logger
+
+logger = get_logger()
 
 
 class Validator:
@@ -38,7 +42,10 @@ class Validator:
         results = []
         for index, task in enumerate(experiment.steps, start=1):
             task_name = task.task.upper()
-            task_function = self.get_function_to_validate(task)
+            try:
+                task_function = self.get_function_to_validate(task)
+            except Exception as e:
+                logger.error(f"Task function {task_name} failed to load: {e}")
 
             if task_function:
                 is_valid, errors, warnings = self.validate_task_parameters(
@@ -77,7 +84,7 @@ class Validator:
                     if function_to_validate:
                         return function_to_validate
 
-        return function_to_validate
+        raise ValueError(f"{task.task} not found in task_functions dictionary")
 
     @staticmethod
     def is_in_enum(name: str, task_enum: Enum) -> Optional[Any]:
@@ -239,9 +246,10 @@ class Validator:
     def validate_task(task: Task) -> List[Tuple[str, bool, str]]:
 
         # Use the refactored function to get the function to validate
-        function_to_validate = Validator.get_function_to_validate(task)
-
-        # Proceed with validation if a matching function is found
+        try:
+            function_to_validate = Validator.get_function_to_validate(task)
+        except Exception as e:
+            logger.error(f"Task function failed to load: {e}")
         if function_to_validate:
             return True
         return False
