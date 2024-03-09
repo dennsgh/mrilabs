@@ -2,7 +2,7 @@ import argparse
 import os
 import signal
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Tuple
 
 os.environ["PYQTGRAPH_QT_LIB"] = "PyQt6"
 import pyvisa
@@ -37,6 +37,8 @@ QLocale.setDefault(QLocale(QLocale.Language.English, QLocale.Country.UnitedState
 
 def signal_handler(signum, frame):
     logger.info("Exit signal detected.")
+    QApplication.quit()
+    factory.worker.stop_worker()
     # Invoke the default SIGINT handler to exit the application
     signal.signal(signum, signal.SIG_DFL)
     os.kill(os.getpid(), signum)
@@ -160,14 +162,13 @@ class MainWindow(ModularMainWindow):
         super().showEvent(event)
 
 
-def create_app(args_dict: dict) -> (QApplication, MainWindow):
+def create_app(args_dict: dict) -> Tuple[QApplication, MainWindow]:
     init_objects(args_dict=args_dict)
 
     app = QApplication([])
     window = MainWindow(args_dict)
 
     qdarktheme.setup_theme()
-
     app_icon = QIcon(Path(os.getenv("ASSETS"), "favicon.ico").as_posix())
     app.setWindowIcon(app_icon)
     window.setWindowIcon(app_icon)
@@ -178,16 +179,7 @@ def create_app(args_dict: dict) -> (QApplication, MainWindow):
     return app, window
 
 
-def run_application():
-    parser = argparse.ArgumentParser(description="Run the mrilabs application.")
-    parser.add_argument(
-        "--hardware-mock",
-        action="store_true",
-        help="Run the app in hardware mock mode.",
-    )
-
-    args = parser.parse_args()
-    args_dict = vars(args)
+def run_application(args_dict):
     logger.info(args_dict)
     app, window = create_app(args_dict)
     window.show()
@@ -195,4 +187,12 @@ def run_application():
 
 
 if __name__ == "__main__":
-    run_application()
+    parser = argparse.ArgumentParser(description="Run the mrilabs application.")
+    parser.add_argument(
+        "--hardware-mock",
+        action="store_true",
+        help="Run the app in hardware mock mode.",
+    )
+    args = parser.parse_args()
+    args_dict = vars(args)
+    run_application(args_dict)

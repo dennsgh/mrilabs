@@ -5,6 +5,9 @@ description = "Software Framework for Task Automation and Scheduling"
 authors = ["dennis <denngohis@gmail.com>"]
 license = "MIT"
 readme = "README.md"
+packages = [
+    { include = "mrilabs", from = "src" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.10,<=3.11.8"
@@ -22,6 +25,7 @@ filelock = "^3.13.1"
 python-dotenv = {extras = ["cli"], version = "^1.0.1"}
 pydantic = "^2.6.3"
 colorlog = "^6.8.2"
+click = "^8.1.7"
 
 
 [build-system]

@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Any, Callable, Dict
 
 from mrilabs.scheduler.worker import Worker
-
 from mrilabs.utils.logging import create_numbered_backup, get_logger
 
 
@@ -94,7 +93,7 @@ class Timekeeper:
         kwargs = kwargs or ""
         return hashlib.sha256(
             str(f"{task_name}{schedule_time.isoformat()}{args}{kwargs}").encode()
-        ).hexdigest()
+        ).hexdigest()[:12]
 
     def add_job(self, task_name: str, schedule_time: datetime, **kwargs) -> str:
         """

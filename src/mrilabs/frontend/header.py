@@ -1,4 +1,5 @@
 from enum import Enum
+from pathlib import Path
 
 VERSION_STRING = "v0.1.0"
 
@@ -17,6 +18,8 @@ class DeviceName(Enum):
     EDUX1002A = "EDUX1002A"
 
 
+DEFAULT_WORKDIR = Path().home() / ".mrilabs"
+DEFAULT_WORKDIR.mkdir(parents=True, exist_ok=True)
 DECIMAL_POINTS = 5
 DEVICE_LIST = [DeviceName.DG4202.value, DeviceName.EDUX1002A.value]
 NOT_FOUND_STRING = "Device not found!"
