@@ -16,7 +16,7 @@ from PyQt6.QtWidgets import (
 
 from mrilabs.frontend.pages import factory
 from mrilabs.frontend.widgets.sch_exp_popup import ExperimentConfigPopup
-from mrilabs.frontend.widgets.sch_task_popup import JobDetailsDialog, TaskConfigPopup
+from mrilabs.frontend.widgets.sch_task_popup import TaskConfigPopup, TaskDetailsDialog
 from mrilabs.scheduler.timekeeper import Timekeeper
 from mrilabs.utils import logging as logutils
 from mrilabs.utils.logging import get_logger
@@ -233,7 +233,7 @@ class SchedulerWidget(QWidget):
                     finished_jobs = json.load(file)
                 job_details = finished_jobs.get(job_id, {})
                 if job_details:
-                    dialog = JobDetailsDialog(job_details, self)
+                    dialog = TaskDetailsDialog(job_details, self)
                     dialog.exec()
             except FileNotFoundError:
                 QMessageBox.warning(

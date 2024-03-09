@@ -294,7 +294,7 @@ class TaskConfigPopup(QDialog):
             self.callback()
             super().accept()
         except Exception as e:
-            logger.info({f"Error during commissioning job on : {e}"})
+            logger.info({f"Error during commissioning task on : {e}"})
 
     def getDateTimeFromInputs(self):
         if self.timeConfigComboBox.currentText() == TIMESTAMP_KEYWORD:
@@ -323,10 +323,10 @@ class TaskConfigPopup(QDialog):
             return datetime.now() + delay
 
 
-class JobDetailsDialog(QDialog):
-    def __init__(self, job_details, parent=None):
+class TaskDetailsDialog(QDialog):
+    def __init__(self, task_details, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Job Details")
+        self.setWindowTitle("Task Details")
 
         # Set a larger initial width for the dialog
         self.resize(400, 300)  # You can adjust the width and height as needed
@@ -336,7 +336,7 @@ class JobDetailsDialog(QDialog):
         self.tableWidget = QTableWidget(self)
         self.tableWidget.setColumnCount(2)
         self.tableWidget.setHorizontalHeaderLabels(["Field", "Value"])
-        self.populate_table(job_details)
+        self.populate_table(task_details)
 
         # Set the table to expand to fill the dialog
         self.tableWidget.setSizePolicy(
@@ -349,9 +349,9 @@ class JobDetailsDialog(QDialog):
         closeButton.clicked.connect(self.accept)
         layout.addWidget(closeButton)
 
-    def populate_table(self, job_details):
-        self.tableWidget.setRowCount(len(job_details))
-        for row, (key, value) in enumerate(job_details.items()):
+    def populate_table(self, task_details):
+        self.tableWidget.setRowCount(len(task_details))
+        for row, (key, value) in enumerate(task_details.items()):
             key_item = QTableWidgetItem(str(key))
             value_item = QTableWidgetItem(str(value))
 
