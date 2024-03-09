@@ -179,11 +179,8 @@ def create_app(args_dict: dict) -> Tuple[QApplication, MainWindow]:
     qdarktheme.setup_theme()
 
     # Assuming 'mrilabs.assets' is a valid package path
-    with resource_path("mrilabs.assets", "favicon.ico") as icon_path:
-        app_icon = QIcon(icon_path.as_posix())
-
-    # Or using 'files' for a more modern approach (Python >= 3.9)
-    app_icon = QIcon(files("mrilabs.assets").joinpath("favicon.ico"))
+    favicon_path = files("mrilabs.assets").joinpath("favicon.ico")
+    app_icon = QIcon(str(favicon_path))
 
     app.setWindowIcon(app_icon)
     window.setWindowIcon(app_icon)

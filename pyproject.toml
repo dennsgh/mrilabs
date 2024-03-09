@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mrilabs"
-version = "0.1.1"
+version = "0.1.2"
 description = "Software Framework for Task Automation and Scheduling"
 authors = ["dennis <denngohis@gmail.com>"]
 license = "MIT"

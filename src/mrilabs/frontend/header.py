@@ -2,7 +2,7 @@ import os
 from enum import Enum
 from pathlib import Path
 
-VERSION_STRING = "v0.1.1"
+VERSION_STRING = "v0.1.2"
 
 GRAPH_RGB = (255, 255, 255)
 OSCILLOSCOPE_BUFFER_SIZE = 512
@@ -45,12 +45,12 @@ SETTINGS_FILE = (
     and Path(data_dir / "settings.json")
     or (DEFAULT_DATADIR / "settings.json")
 )
-LOG_FILE = (
-    Path(data_dir / "mrilabs.log").exists()
-    and Path(data_dir / "mrilabs.log")
-    or (DEFAULT_DATADIR / "mrilabs.log")
+LOG_DIR = (
+    Path(data_dir / "logs").exists()
+    and Path(data_dir / "logs")
+    or (DEFAULT_DATADIR / "logs")
 )
-
+LOG_DIR.mkdir(parents=True, exist_ok=True)
 DECIMAL_POINTS = 5
 DEVICE_LIST = [DeviceName.DG4202.value, DeviceName.EDUX1002A.value]
 NOT_FOUND_STRING = "Device not found!"

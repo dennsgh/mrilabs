@@ -6,7 +6,7 @@ from pathlib import Path
 
 from colorlog import ColoredFormatter
 
-from mrilabs.frontend.header import LOG_FILE
+from mrilabs.frontend.header import LOG_DIR
 
 # Global logger variable
 logger = None
@@ -61,7 +61,7 @@ def init_logging(logger_name: str = None):
         logger = logging.getLogger(logger_name)
         logger.setLevel(logging.INFO)
 
-        logs_path = LOG_FILE
+        logs_path = LOG_DIR
         if not logs_path.is_dir():
             logs_path.mkdir(parents=True, exist_ok=True)
         log_file_path = logs_path / f"{logger_name}.log"
