@@ -132,9 +132,8 @@ class Worker:
                 )  # Changed from error to info
             except Exception as e:
                 error_info = traceback.format_exc()  # Capture and format the traceback
-                self.logger.error(
-                    f"Task '{task_name}' failed to execute. Error: {e}, Traceback: {error_info}"
-                )
+                self.logger.error(f"Task '{task_name}' failed to execute. Error: {e}")
+                self.logger.error(f"{error_info}")
         else:
             self.logger.error(f"Task '{task_name}' is not registered.")
         if _callback and job_id:
