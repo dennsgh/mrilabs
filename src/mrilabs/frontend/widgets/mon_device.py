@@ -19,6 +19,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from mrilabs.frontend.header import MONITOR_FILE
 from mrilabs.frontend.managers.device import DeviceManager
 from mrilabs.utils import logging as logutils
 
@@ -34,7 +35,7 @@ class DeviceMonitorWidget(QWidget):
     ):
         super().__init__(parent)
         self.device_managers = device_managers  # Dictionary of device managers
-        self.monitor_logs = monitor_logs or Path(os.getenv("LOGS"), "monitor.json")
+        self.monitor_logs = monitor_logs or MONITOR_FILE
         self.device_statuses = {
             device_name: False for device_name in self.device_managers.keys()
         }

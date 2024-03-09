@@ -11,7 +11,12 @@ from PyQt6.QtCore import QLocale
 from PyQt6.QtGui import QGuiApplication, QIcon
 from PyQt6.QtWidgets import QApplication, QStackedWidget, QWidget
 
-from mrilabs.frontend.header import OSCILLOSCOPE_BUFFER_SIZE, DeviceName
+from mrilabs.frontend.header import (
+    MONITOR_FILE,
+    OSCILLOSCOPE_BUFFER_SIZE,
+    TIMEKEEPER_JOBS_FILE,
+    DeviceName,
+)
 from mrilabs.frontend.managers.dg4202 import DG4202Manager
 from mrilabs.frontend.managers.edux1002a import EDUX1002AManager
 from mrilabs.frontend.managers.state_manager import StateManager
@@ -63,7 +68,7 @@ def init_objects(args_dict: dict):
         logger=logger,
     )
     factory.timekeeper = Timekeeper(
-        persistence_file=factory.TIMEKEEPER_JOBS_FILE,
+        persistence_file=TIMEKEEPER_JOBS_FILE,
         worker_instance=factory.worker,
         logger=logger,
     )
@@ -107,7 +112,7 @@ class MainWindow(ModularMainWindow):
                 device_managers=device_managers,
                 parent=self,
                 args_dict=args_dict,
-                monitor_logs=factory.MONITOR_FILE,
+                monitor_logs=MONITOR_FILE,
                 root_callback=self.root_callback,
             ),
             SettingsPage.PAGE_NAME: SettingsPage(

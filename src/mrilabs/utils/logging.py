@@ -6,6 +6,8 @@ from pathlib import Path
 
 from colorlog import ColoredFormatter
 
+from mrilabs.frontend.header import LOG_FILE
+
 # Global logger variable
 logger = None
 
@@ -52,14 +54,14 @@ def create_numbered_backup(original_path: Path):
     return new_backup
 
 
-def init_logging():
+def init_logging(logger_name: str = None):
     global logger
     if logger is None:
-        logger_name = os.getenv("LOGGER_NAME", "logs")
+        logger_name = logger_name or "mrilabs"
         logger = logging.getLogger(logger_name)
         logger.setLevel(logging.INFO)
 
-        logs_path = Path(os.getenv("LOGS", Path.cwd() / "logs"))
+        logs_path = LOG_FILE
         if not logs_path.is_dir():
             logs_path.mkdir(parents=True, exist_ok=True)
         log_file_path = logs_path / f"{logger_name}.log"

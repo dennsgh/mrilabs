@@ -1,64 +1,30 @@
-import os
-import subprocess
-import sys
+from pathlib import Path
 
-# Create .env file if it does not exist
-open(".env", "a").close()
-print(f"Setting up environment with OS type: {os.name}")
+# Locate the root directory (assuming the script is in root/etc)
+script_path = Path(__file__).resolve()
+root_dir = script_path.parent.parent  # Move up twice to get to root
 
-# Determine the operating system type
-ostype = sys.platform
-script_path = os.path.abspath(__file__)
+# Define directories
+src_dir = root_dir / "src"
+data_dir = root_dir / "data"
+assets_dir = src_dir / "assets"
 
-if ostype.startswith("linux") or ostype == "msys" or ostype == "cygwin":
-    config = os.path.dirname(script_path)
-    working_dir = os.path.dirname(config)
-elif ostype == "darwin":
-    working_dir = os.path.dirname(script_path)
-    config = os.path.join(working_dir, "etc")
-else:
-    # This else block is not directly from your script but assumes a default behavior
-    working_dir = os.path.dirname(script_path)
-    config = os.path.join(working_dir, "etc")
+# Environment variables as key-value pairs
+env_vars = {
+    "PYTHONPATH": str(src_dir),
+    "ASSETS": str(assets_dir),
+    "DATA": str(data_dir),
+}
+print("Environment variables:")
+print("|=====================================|")
+for key, value in env_vars.items():
+    print(f"|  {key}={value}")
+print("|=====================================|")
 
-data = os.path.join(working_dir, "data")
-logs = os.path.join(working_dir, "logs")
-assets = os.path.join(working_dir, "assets")
+# Write environment variables to .env file
+env_file_path = root_dir / ".env"
+with env_file_path.open("w") as env_file:
+    for key, value in env_vars.items():
+        env_file.write(f"{key}={value}\n")
 
-src = os.path.join(working_dir, "src")
-
-if (
-    ostype.startswith("linux")
-    or ostype == "darwin"
-    or ostype == "cygwin"
-    or ostype == "msys"
-):
-    pythonpath = f"{src}"
-else:
-    pythonpath = f"{os.getenv('PYTHONPATH', '')}:{src}"
-
-# Set environment variables
-os.environ["WORKINGDIR"] = working_dir
-os.environ["CONFIG"] = config
-os.environ["DATA"] = data
-os.environ["LOGS"] = logs
-os.environ["ASSETS"] = assets
-os.environ["SRC"] = src
-os.environ["PYTHONPATH"] = pythonpath
-
-# Corrected invocation of dotenv with subprocess.run
-env_vars = ["WORKINGDIR", "ASSETS", "CONFIG", "LOGS", "DATA", "PYTHONPATH"]
-for var in env_vars:
-    subprocess.run(
-        [
-            "python",
-            "-m",
-            "dotenv",
-            "-f",
-            f".env",
-            "set",
-            var,
-            os.getenv(var),
-        ],
-        check=True,  # Optionally, add this to raise an exception if the command fails
-    )
+print("Environment setup completed.")

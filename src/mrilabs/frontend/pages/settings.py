@@ -8,7 +8,7 @@ from mrilabs.frontend.managers.device import DeviceManager
 from mrilabs.frontend.widgets.set_mock import MockHardwareWidget
 from mrilabs.frontend.widgets.set_state import SettingsStateWidget
 from mrilabs.frontend.widgets.templates import BasePage
-
+from mrilabs.frontend.header import SETTINGS_FILE
 
 class SettingsPage(BasePage):
     PAGE_NAME = "Settings"
@@ -25,7 +25,7 @@ class SettingsPage(BasePage):
         )
         self.device_managers = device_managers
         self.settings_widget = SettingsStateWidget(
-            settings_file=Path(os.getenv("DATA"), "settings.json")
+            settings_file=SETTINGS_FILE
         )
         self.mock_hardware_widget = None  # Will be initialized if hardware_mock is True
         self.initUI()

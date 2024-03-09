@@ -26,26 +26,20 @@
   },
   "terminal.integrated.env.linux": {
     "WORKINGDIR": "${workspaceRoot}",
-    "CONFIG": "${workspaceRoot}/etc",
     "DATA": "${workspaceRoot}/data",
     "ASSETS": "${workspaceRoot}assets",
-    "LOGS": "${workspaceRoot}/logs",
     "PYTHONPATH": "${env:PYTHONPATH}:${workspaceRoot}/src"
   },
   "terminal.integrated.env.windows": {
     "WORKINGDIR": "${workspaceRoot}",
-    "CONFIG": "${workspaceRoot}\\etc",
     "DATA": "${workspaceRoot}\\data",
     "ASSETS": "${workspaceRoot}\\assets",
-    "LOGS": "${workspaceRoot}\\logs",
     "PYTHONPATH": "${env:PYTHONPATH};${workspaceRoot}\\src"
   },
   "terminal.integrated.env.osx": {
     "WORKINGDIR": "${workspaceRoot}",
-    "CONFIG": "${workspaceRoot}/etc",
     "DATA": "${workspaceRoot}/data",
     "ASSETS": "${workspaceRoot}assets",
-    "LOGS": "${workspaceRoot}/logs",
     "PYTHONPATH": "${env:PYTHONPATH}:${workspaceRoot}/src"
   }
 }

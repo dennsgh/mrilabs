@@ -6,7 +6,7 @@ from pathlib import Path
 
 from filelock import FileLock
 
-from mrilabs.frontend.header import DEFAULT_WORKDIR
+from mrilabs.frontend.header import STATE_FILE
 from mrilabs.utils import logging as logutils
 
 # Setting up basic logging
@@ -17,11 +17,7 @@ logging.basicConfig(
 
 class StateManager:
     def __init__(self, json_file: Path = None):
-        self.json_file = (
-            json_file or Path(os.getenv("DATA"), "state.json")
-            if os.getenv("DATA")
-            else DEFAULT_WORKDIR / "state.json"
-        )
+        self.json_file = json_file or STATE_FILE
         self.lock_file = self.json_file.with_suffix(".lock")
         self.data = self.default_state()
         self.birthdate = time.time()
