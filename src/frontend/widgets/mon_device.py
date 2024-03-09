@@ -4,7 +4,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict
 
-from frontend.managers.device import DeviceManager
 from PyQt6 import QtCore
 from PyQt6.QtCore import QTimer
 from PyQt6.QtWidgets import (
@@ -20,7 +19,10 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from frontend.managers.device import DeviceManager
 from utils import logging as logutils
+
+logger = logutils.get_logger()
 
 
 class DeviceMonitorWidget(QWidget):
@@ -111,6 +113,7 @@ class DeviceMonitorWidget(QWidget):
 
     def log_event(self, description: str):
         timestamp = datetime.now().isoformat()
+        logger.info(f"[Monitor]: {description}")
         event = {"timestamp": timestamp, "description": description}
         if not self.monitor_logs.exists():
             with open(self.monitor_logs, "w") as file:

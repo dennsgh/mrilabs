@@ -33,23 +33,20 @@ class DG4202SignalGeneratorWidget(QWidget):
         self.channel_count = 2
         self.link_channel = False
         self.dg4202_manager = dg4202_manager
-        self.my_generator = self.dg4202_manager.get_device()
         self.all_parameters = self.dg4202_manager.get_data()
-        # Initialize references to input fields
         self.input_objects = {1: {}, 2: {}}
-        # Init UI
         self.initUI()
 
     def check_connection(self) -> bool:
-        self.my_generator = self.dg4202_manager.get_device()
+        self.dg4202_manager.device = self.dg4202_manager.get_device()
         self.all_parameters = self.dg4202_manager.get_data()
 
-        if self.my_generator is None:
+        if self.dg4202_manager.device is None:
             return False
 
-        is_alive = self.my_generator.is_connection_alive()
+        is_alive = self.dg4202_manager.device.is_connection_alive()
         if not is_alive:
-            self.my_generator = None
+            self.dg4202_manager.device = None
         return is_alive
 
     def create_widgets(self):
@@ -389,84 +386,89 @@ class DG4202SignalGeneratorWidget(QWidget):
         htime_start: float,
         htime_stop: float,
     ):
-        if self.check_connection():
-            sweep = (
-                float(sweep)
-                if sweep
-                else float(
-                    self.all_parameters.get(f"{channel}", {})
-                    .get("mode", {})
-                    .get("parameters", {})
-                    .get("sweep", {})
-                    .get("TIME", 0.0)
+        try:
+            if self.dg4202_manager.get_device():
+                sweep = (
+                    float(sweep)
+                    if sweep
+                    else float(
+                        self.all_parameters.get(f"{channel}", {})
+                        .get("mode", {})
+                        .get("parameters", {})
+                        .get("sweep", {})
+                        .get("TIME", 0.0)
+                    )
                 )
-            )
-            rtime = (
-                float(rtime)
-                if rtime
-                else float(
-                    self.all_parameters.get(f"{channel}", {})
-                    .get("mode", {})
-                    .get("parameters", {})
-                    .get("sweep", {})
-                    .get("RTIME", 0.0)
+                rtime = (
+                    float(rtime)
+                    if rtime
+                    else float(
+                        self.all_parameters.get(f"{channel}", {})
+                        .get("mode", {})
+                        .get("parameters", {})
+                        .get("sweep", {})
+                        .get("RTIME", 0.0)
+                    )
                 )
-            )
-            fstart = (
-                float(fstart)
-                if fstart
-                else float(
-                    self.all_parameters.get(f"{channel}", {})
-                    .get("mode", {})
-                    .get("parameters", {})
-                    .get("sweep", {})
-                    .get("FSTART", 0.0)
+                fstart = (
+                    float(fstart)
+                    if fstart
+                    else float(
+                        self.all_parameters.get(f"{channel}", {})
+                        .get("mode", {})
+                        .get("parameters", {})
+                        .get("sweep", {})
+                        .get("FSTART", 0.0)
+                    )
                 )
-            )
-            fstop = (
-                float(fstop)
-                if fstop
-                else float(
-                    self.all_parameters.get(f"{channel}", {})
-                    .get("mode", {})
-                    .get("parameters", {})
-                    .get("sweep", {})
-                    .get("FSTOP", 0.0)
+                fstop = (
+                    float(fstop)
+                    if fstop
+                    else float(
+                        self.all_parameters.get(f"{channel}", {})
+                        .get("mode", {})
+                        .get("parameters", {})
+                        .get("sweep", {})
+                        .get("FSTOP", 0.0)
+                    )
                 )
-            )
-            htime_start = (
-                float(htime_start)
-                if htime_start
-                else float(
-                    self.all_parameters.get(f"{channel}", {})
-                    .get("mode", {})
-                    .get("parameters", {})
-                    .get("sweep", {})
-                    .get("HTIME_START", 0.0)
+                htime_start = (
+                    float(htime_start)
+                    if htime_start
+                    else float(
+                        self.all_parameters.get(f"{channel}", {})
+                        .get("mode", {})
+                        .get("parameters", {})
+                        .get("sweep", {})
+                        .get("HTIME_START", 0.0)
+                    )
                 )
-            )
-            htime_stop = (
-                float(htime_stop)
-                if htime_stop
-                else float(
-                    self.all_parameters.get(f"{channel}", {})
-                    .get("mode", {})
-                    .get("parameters", {})
-                    .get("sweep", {})
-                    .get("HTIME_STOP", 0.0)
+                htime_stop = (
+                    float(htime_stop)
+                    if htime_stop
+                    else float(
+                        self.all_parameters.get(f"{channel}", {})
+                        .get("mode", {})
+                        .get("parameters", {})
+                        .get("sweep", {})
+                        .get("HTIME_STOP", 0.0)
+                    )
                 )
-            )
-            params = {
-                "TIME": sweep,
-                "RTIME": rtime,
-                "FSTART": fstart,
-                "FSTOP": fstop,
-                "HTIME_START": htime_start,
-                "HTIME_STOP": htime_stop,
-            }
-            logger.info(params)
-            self.my_generator.set_sweep_parameters(channel, params)
-            self.update_sweep_graph(channel)
+                params = {
+                    "TIME": sweep,
+                    "RTIME": rtime,
+                    "FSTART": fstart,
+                    "FSTOP": fstop,
+                    "HTIME_START": htime_start,
+                    "HTIME_STOP": htime_stop,
+                }
+                logger.info(params)
+                self.dg4202_manager.device.set_sweep_parameters(channel, params)
+                self.update_sweep_graph(channel)
+            else:
+                logger.error(f"{NOT_FOUND_STRING} Is device connected?.")
+        except Exception as e:
+            logger.error(f"Error:{e}")
 
     def toggle_output(self, channel: int):
         """
@@ -475,21 +477,28 @@ class DG4202SignalGeneratorWidget(QWidget):
         Parameters:
             channel (int): The channel number.
         """
-        if self.check_connection():
-            set_to = (
-                False
-                if self.all_parameters.get(f"{channel}", {}).get("output_status", "ERR")
-                == "ON"
-                else True
-            )
-            logger.info(
-                f'{channel} is {self.all_parameters.get(f"{channel}", {}).get("output_status", "ERR")} -> {set_to}'
-            )
-            self.my_generator.output_on_off(channel, set_to)
-            self.check_connection()  # updates dictionary
-            # Update the button state after toggling the output
+        try:
+            if self.check_connection():
+                set_to = (
+                    False
+                    if self.all_parameters.get(f"{channel}", {}).get(
+                        "output_status", "ERR"
+                    )
+                    == "ON"
+                    else True
+                )
+                logger.info(
+                    f'{channel} is {self.all_parameters.get(f"{channel}", {}).get("output_status", "ERR")} -> {set_to}'
+                )
+                self.dg4202_manager.device.output_on_off(channel, set_to)
+                self.check_connection()  # updates dictionary
+                # Update the button state after toggling the output
 
-        self.update_button_state(channel)
+            else:
+                logger.error(f"{NOT_FOUND_STRING} Is device connected?")
+            self.update_button_state(channel)
+        except Exception as e:
+            logger.error(f"Error:{e}")
 
     def update_button_state(self, channel: int):
         """
@@ -544,43 +553,47 @@ class DG4202SignalGeneratorWidget(QWidget):
             offset (float): The selected offset.
             self.waveform_plot_data (float): Plot data reference.
         """
-        if self.check_connection():
-            frequency = frequency or float(
-                self.all_parameters[f"{channel}"]["waveform"]["frequency"]
-            )
-            amplitude = amplitude or float(
-                self.all_parameters[f"{channel}"]["waveform"]["amplitude"]
-            )
-            offset = offset or float(
-                self.all_parameters[f"{channel}"]["waveform"]["offset"]
-            )
-            waveform_type = (
-                waveform_type
-                or self.all_parameters[f"{channel}"]["waveform"]["waveform_type"]
-            )
-
-            # If a parameter is not set, pass the current value
-            self.my_generator.set_waveform(
-                channel, waveform_type, frequency, amplitude, offset
-            )
-
-            if self.link_channel:
-                self.my_generator.set_waveform(
-                    2 if channel == 1 else 1,
-                    waveform_type,
-                    frequency,
-                    amplitude,
-                    offset,
+        try:
+            if self.dg4202_manager.get_device():
+                frequency = frequency or float(
+                    self.all_parameters[f"{channel}"]["waveform"]["frequency"]
+                )
+                amplitude = amplitude or float(
+                    self.all_parameters[f"{channel}"]["waveform"]["amplitude"]
+                )
+                offset = offset or float(
+                    self.all_parameters[f"{channel}"]["waveform"]["offset"]
+                )
+                waveform_type = (
+                    waveform_type
+                    or self.all_parameters[f"{channel}"]["waveform"]["waveform_type"]
                 )
 
-            # Update some status label or log if you have one
-            status_string = f"[{datetime.now().isoformat()}] Waveform updated."
-            # Assuming you have a status_label in your UI
-            self.status_label.setText(status_string)
-            self.update_waveform_graph(channel)
-        else:
-            # Update some status label or log if you have one
-            self.status_label.setText(NOT_FOUND_STRING)
+                # If a parameter is not set, pass the current value
+                self.dg4202_manager.device.set_waveform(
+                    channel, waveform_type, frequency, amplitude, offset
+                )
+
+                if self.link_channel:
+                    self.dg4202_manager.device.set_waveform(
+                        2 if channel == 1 else 1,
+                        waveform_type,
+                        frequency,
+                        amplitude,
+                        offset,
+                    )
+
+                # Update some status label or log if you have one
+                status_string = f"[{datetime.now().isoformat()}] Waveform updated."
+                # Assuming you have a status_label in your UI
+                self.status_label.setText(status_string)
+                self.update_waveform_graph(channel)
+            else:
+                self.status_label.setText(NOT_FOUND_STRING)
+                logger.error(f"{NOT_FOUND_STRING} Is device connected?")
+
+        except Exception as e:
+            logger.error("Error: %s, ", e)
 
     def update_waveform_graph(self, channel):
         self.check_connection()
