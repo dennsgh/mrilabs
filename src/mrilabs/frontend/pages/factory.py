@@ -13,7 +13,7 @@ from mrilabs.scheduler.worker import Worker
 # ======================================================== #
 # =======================File Paths======================= #
 # ======================================================== #
-# Ensure DATA has a default value if not set; here we use DEFAULT_WORKDIR as a fallback
+# Ensure DATA has a default value if not set; here we use DEFAULT_DATADIR as a fallback
 
 # ======================================================== #
 # Place holder globals, these are initialized in app.py

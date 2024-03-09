@@ -20,7 +20,7 @@ def ensure_env_variables():
     load_dotenv()
 
     # Define the key environment variables to check and their default values
-    key_env_vars = ["WORKINGDIR", "CONFIG", "DATA", "LOGS", "PYTHONPATH", "ASSETS"]
+    key_env_vars = ["WORKINGDIR", "DATA", "PYTHONPATH", "ASSETS"]
 
     # Set environment variables to "" if they are not already set
     for var in key_env_vars:

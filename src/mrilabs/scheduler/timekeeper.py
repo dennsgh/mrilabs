@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Callable, Dict
 
-from mrilabs.frontend.header import DEFAULT_WORKDIR
+from mrilabs.frontend.header import DEFAULT_DATADIR
 from mrilabs.scheduler.worker import Worker
 from mrilabs.utils.logging import create_numbered_backup, get_logger
 
@@ -34,7 +34,7 @@ class Timekeeper:
         self.archive = (
             archive
             or Path(os.getenv("DATA"), "archive.json")
-            or DEFAULT_WORKDIR / "archive.json"
+            or DEFAULT_DATADIR / "archive.json"
         )
         self.reload_function_map()
         self.__reschedule_jobs__()
