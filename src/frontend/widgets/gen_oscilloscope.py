@@ -21,6 +21,7 @@ from utils.logging import get_logger
 
 logger = get_logger()
 
+
 class EDUX1002AOscilloscopeWidget(QWidget):
     def __init__(
         self,
@@ -43,18 +44,23 @@ class EDUX1002AOscilloscopeWidget(QWidget):
         self.timer.stop()
 
     def configuration(self):
-        """configuration"""
-        if self.edux1002a_manager.get_device():
-            self.edux1002a_manager.device.set_acquisition_type("AVERage")
-            self.edux1002a_manager.device.set_waveform_return_type("AVERage")
-            self.edux1002a_manager.device.set_waveform_format("ASCII")
-            self.edux1002a_manager.device.set_acquisition_complete(100)
-            self.edux1002a_manager.device.set_acquisition_count(8)
-            self.edux1002a_manager.device.set_waveform_points(
-                self.edux1002a_manager.buffer_size
-            )
-        else:
-            logger.info("EDUX1002A not connnected, device configuration not started.")
+        try:
+            """configuration"""
+            if self.edux1002a_manager.get_device():
+                self.edux1002a_manager.device.set_acquisition_type("AVERage")
+                self.edux1002a_manager.device.set_waveform_return_type("AVERage")
+                self.edux1002a_manager.device.set_waveform_format("ASCII")
+                self.edux1002a_manager.device.set_acquisition_complete(100)
+                self.edux1002a_manager.device.set_acquisition_count(8)
+                self.edux1002a_manager.device.set_waveform_points(
+                    self.edux1002a_manager.buffer_size
+                )
+            else:
+                logger.info(
+                    "EDUX1002A not connnected, device configuration not started."
+                )
+        except Exception as e:
+            logger.error(f"Error: {e}")
 
     def update_spinbox_values(self, xRange, yRange, x_input, y_input):
         x_input.blockSignals(True)
@@ -234,9 +240,12 @@ class EDUX1002AOscilloscopeWidget(QWidget):
             self.channel1_button.setStyleSheet("")
 
     def set_active_channel(self, channel: int):
-        self.active_channel = channel
-        self.edux1002a_manager.device.setup_waveform_readout(channel)
-        self.update_channel_button_styles()
+        try:
+            self.active_channel = channel
+            self.edux1002a_manager.get_device().setup_waveform_readout(channel)
+            self.update_channel_button_styles()
+        except Exception as e:
+            logger.error(f"Error :{e}, is the device connected?")
 
     def update_data(self):
         try:
@@ -245,7 +254,7 @@ class EDUX1002AOscilloscopeWidget(QWidget):
             time = np.arange(len(voltage))
             self.plot_data[self.active_channel].setData(time, voltage)
         except Exception as e:
-            logger.info(f"[Oscilloscope]{e}")
+            logger.error(f"Error: {e}, is the device connected?")
             self.freeze()
 
     def freeze(self):

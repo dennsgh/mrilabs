@@ -36,7 +36,7 @@ class MockDevice(Device):
         if object.__getattribute__(self, "killed") and name in object.__getattribute__(
             self, "blocked_methods"
         ):
-            raise Exception("Device is disconnected!")
+            raise Exception(f"Device {self.__class__.__name__} is disconnected!")
         else:
             return object.__getattribute__(self, name)
 

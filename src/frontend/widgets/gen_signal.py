@@ -26,18 +26,6 @@ logger = get_logger()
 
 
 class DG4202SignalGeneratorWidget(QWidget):
-    def check_connection(self) -> bool:
-        self.my_generator = self.dg4202_manager.get_device()
-        self.all_parameters = self.dg4202_manager.get_data()
-
-        if self.my_generator is None:
-            return False
-
-        is_alive = self.my_generator.is_connection_alive()
-        if not is_alive:
-            self.my_generator = None
-        return is_alive
-
     def __init__(self, dg4202_manager: DG4202Manager, parent=None):
         super().__init__(parent=parent)
         self.sweep_plot_data = {1: None, 2: None}
@@ -51,6 +39,18 @@ class DG4202SignalGeneratorWidget(QWidget):
         self.input_objects = {1: {}, 2: {}}
         # Init UI
         self.initUI()
+
+    def check_connection(self) -> bool:
+        self.my_generator = self.dg4202_manager.get_device()
+        self.all_parameters = self.dg4202_manager.get_data()
+
+        if self.my_generator is None:
+            return False
+
+        is_alive = self.my_generator.is_connection_alive()
+        if not is_alive:
+            self.my_generator = None
+        return is_alive
 
     def create_widgets(self):
         # A dictionary to store widgets for each channel by channel number

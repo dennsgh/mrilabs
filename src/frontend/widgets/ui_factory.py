@@ -12,6 +12,7 @@ from PyQt6.QtWidgets import (
 
 
 class UIComponentFactory:
+
     TRUTH_VALUES = [
         "true",
         "1",
@@ -38,6 +39,60 @@ class UIComponentFactory:
         QComboBox: "currentIndexChanged",
         QCheckBox: "stateChanged",
     }
+
+    @staticmethod
+    def create_widget(
+        parameter_name: str,
+        value: Any,
+        expected_type: type,
+        constraints: Any,
+        callback: Callable = None,
+    ) -> QWidget:
+        """
+        Creates a widget based on the parameter's expected type and the specific constraints.
+        """
+        widget, default_value = UIComponentFactory.map_type_to_widget(
+            expected_type, constraints
+        )
+
+        # Apply the current value or default to the widget
+        if isinstance(widget, (QSpinBox, QDoubleSpinBox)):
+            widget.setValue(
+                expected_type(value)
+                if value is not None
+                else expected_type(default_value)
+            )
+        elif isinstance(widget, QCheckBox):
+            widget.setChecked(
+                value if value is not None else expected_type(default_value)
+            )
+        elif isinstance(widget, QComboBox):
+            if expected_type == bool:
+                # Handle boolean parameters differently
+                if isinstance(value, str):
+                    index = UIComponentFactory.findTextIndexForBooleanValue(
+                        widget, value
+                    )
+                    widget.setCurrentIndex(index)
+                elif isinstance(value, bool):
+                    # Convert boolean to string representation to find the index
+                    value_str = "true" if value else "false"
+                    index = UIComponentFactory.findTextIndexForBooleanValue(
+                        widget, value_str
+                    )
+                    widget.setCurrentIndex(index)
+            elif value in constraints:  # Assuming `constraints` is a list for QComboBox
+                index = widget.findData(value)
+                widget.setCurrentIndex(index)
+            else:
+                widget.setCurrentIndex(0)
+        elif isinstance(widget, QLineEdit):
+            widget.setText(str(value) if value is not None else str(default_value))
+        widget.setProperty("expected_type", expected_type.__name__)
+        widget.setProperty("parameter_name", parameter_name)
+        if callback:
+            UIComponentFactory.connect_widget_signal(widget, callback)
+        return widget
 
     @staticmethod
     def findTextIndexForBooleanValue(widget: QComboBox, value: str) -> int:
@@ -120,60 +175,6 @@ class UIComponentFactory:
 
         # Set property to identify the expected type easily
         return widget, default_value
-
-    @staticmethod
-    def create_widget(
-        parameter_name: str,
-        value: Any,
-        expected_type: type,
-        constraints: Any,
-        callback: Callable = None,
-    ) -> QWidget:
-        """
-        Creates a widget based on the parameter's expected type and the specific constraints.
-        """
-        widget, default_value = UIComponentFactory.map_type_to_widget(
-            expected_type, constraints
-        )
-
-        # Apply the current value or default to the widget
-        if isinstance(widget, (QSpinBox, QDoubleSpinBox)):
-            widget.setValue(
-                expected_type(value)
-                if value is not None
-                else expected_type(default_value)
-            )
-        elif isinstance(widget, QCheckBox):
-            widget.setChecked(
-                value if value is not None else expected_type(default_value)
-            )
-        elif isinstance(widget, QComboBox):
-            if expected_type == bool:
-                # Handle boolean parameters differently
-                if isinstance(value, str):
-                    index = UIComponentFactory.findTextIndexForBooleanValue(
-                        widget, value
-                    )
-                    widget.setCurrentIndex(index)
-                elif isinstance(value, bool):
-                    # Convert boolean to string representation to find the index
-                    value_str = "true" if value else "false"
-                    index = UIComponentFactory.findTextIndexForBooleanValue(
-                        widget, value_str
-                    )
-                    widget.setCurrentIndex(index)
-            elif value in constraints:  # Assuming `constraints` is a list for QComboBox
-                index = widget.findData(value)
-                widget.setCurrentIndex(index)
-            else:
-                widget.setCurrentIndex(0)
-        elif isinstance(widget, QLineEdit):
-            widget.setText(str(value) if value is not None else str(default_value))
-        widget.setProperty("expected_type", expected_type.__name__)
-        widget.setProperty("parameter_name", parameter_name)
-        if callback:
-            UIComponentFactory.connect_widget_signal(widget, callback)
-        return widget
 
     @staticmethod
     def connect_widget_signal(widget: QWidget, callback: Callable[[Any], None]) -> None:

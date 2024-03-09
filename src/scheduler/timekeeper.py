@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict
 
 from scheduler.worker import Worker
-from utils.logging import create_numbered_backup
+from utils.logging import create_numbered_backup, get_logger
 
 
 class Timekeeper:
@@ -26,7 +26,7 @@ class Timekeeper:
             persistence_file (Path): Path to the file used for persisting job data.
             worker_instance (Worker): An instance of the Worker class to execute scheduled tasks.
         """
-        self.logger = logger or logging.getLogger(__name__)
+        self.logger = logger or get_logger()
         self.persistence_file = persistence_file
         self.worker = worker_instance
         self.jobs = self.load_jobs()

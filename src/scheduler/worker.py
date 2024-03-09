@@ -6,6 +6,8 @@ from typing import Any, Callable
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from scheduler.functionmap import FunctionMap
+from utils.logging import get_logger
+
 
 class Worker:
     def __init__(
@@ -20,7 +22,7 @@ class Worker:
         Args:
             function_map_file (Path): Path to the file containing the function map.
         """
-        self.logger = logger or logging.getLogger(__name__)
+        self.logger = logger or get_logger()
         self.scheduler = BackgroundScheduler(daemon=daemon)
         self.function_map = FunctionMap(function_map)
         self.logger.info("Function Map OK")
@@ -34,7 +36,7 @@ class Worker:
             task_name (str): The name associated with the function.
         """
         self.function_map.add_function(task_name, func)
-        self.logger.info(f"Added function {task_name} {func}.")
+        self.logger.info(f"Added function {task_name} {func.__name__}.")
 
     def __schedule_task__(
         self,

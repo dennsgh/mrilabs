@@ -359,39 +359,25 @@ class EDUX1002AMock(MockDevice, EDUX1002A):
 
     # Implementing the mocked methods
     def initialize(self):
-        if self.killed:
-            raise Exception("Device is disconnected!")
         print("Oscilloscope reset to default settings.")
 
     def autoscale(self):
-        if self.killed:
-            raise Exception("Device is disconnected!")
         print("Autoscale completed.")
 
     def set_waveform_source(self, channel: int = 1):
-        if self.killed:
-            raise Exception("Device is disconnected!")
         print(f"Waveform source set to Channel {channel}.")
 
     def set_waveform_format(self, format: str):
-        if self.killed:
-            raise Exception("Device is disconnected!")
         print(f"Waveform format set to {format}.")
 
     def get_waveform_data_raw(self):
-        if self.killed:
-            raise Exception("Device is disconnected!")
         return "Mocked Waveform Data"
 
     def get_waveform_data(self, channel: int = 1):
-        if self.killed:
-            raise Exception("Device is disconnected!")
         # Return simulated waveform data
         return np.random.rand(100)  # Simulating 100 data points
 
     def get_waveform(self, channel: int = 1):
-        if self.killed:
-            raise Exception("Device is disconnected!")
         time = np.arange(100)  # Simulating time data
         voltage = self.get_waveform_data(channel)
         return time, voltage

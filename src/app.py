@@ -43,7 +43,6 @@ def signal_handler(signum, frame):
 
 
 def init_objects(args_dict: dict):
-    logger = get_logger()
     factory.resource_manager = pyvisa.ResourceManager()
     factory.state_manager = StateManager()
     factory.edux1002a_manager = EDUX1002AManager(

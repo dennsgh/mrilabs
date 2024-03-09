@@ -4,6 +4,8 @@ import os
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
+from colorlog import ColoredFormatter
+
 # Global logger variable
 logger = None
 
@@ -61,7 +63,7 @@ def init_logging():
         if not logs_path.is_dir():
             logs_path.mkdir(parents=True, exist_ok=True)
         log_file_path = logs_path / f"{logger_name}.log"
-
+        logger.propagate = False
         # Handler for writing logs to a file
         file_handler = RotatingFileHandler(
             filename=str(log_file_path), maxBytes=10000000, backupCount=5
@@ -71,14 +73,28 @@ def init_logging():
         # Handler for printing logs to the console
         console_handler = logging.StreamHandler()
         console_handler.setLevel(logging.DEBUG)
-
-        # Adjusted formatter to include module names
-        formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(module)s.%(funcName)s:%(lineno)d - %(message)s"
+        colored_formatter = ColoredFormatter(
+            "%(log_color)s%(asctime)s - %(name)s - %(levelname)s - %(module)s.%(funcName)s:\033[97m%(lineno)d\033[0m - %(message)s",
+            datefmt=None,
+            reset=True,
+            log_colors={
+                "DEBUG": "cyan",
+                "INFO": "green",
+                "WARNING": "yellow",
+                "ERROR": "red",
+                "CRITICAL": "red,bg_white",
+            },
+            secondary_log_colors={},
+            style="%",
         )
 
-        file_handler.setFormatter(formatter)
-        console_handler.setFormatter(formatter)
+        # Adjusted formatter to include module names
+        # formatter = logging.Formatter(
+        #     "%(asctime)s - %(name)s - %(levelname)s - %(module)s.%(funcName)s:%(lineno)d - %(message)s"
+        # )
+
+        file_handler.setFormatter(colored_formatter)
+        console_handler.setFormatter(colored_formatter)
 
         # Adding both handlers to the logger
         logger.addHandler(file_handler)

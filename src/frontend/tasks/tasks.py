@@ -1,11 +1,10 @@
+from datetime import datetime, timedelta
 from enum import Enum
 
-from frontend.tasks.task_decorator import parameter_annotations, parameter_constraints
+from device.dg4202 import DG4202
 from frontend.header import DeviceName
 from frontend.pages import factory
-from datetime import datetime, timedelta
-
-from device.dg4202 import DG4202
+from frontend.tasks.task_decorator import parameter_annotations, parameter_constraints
 
 """
 These tasks are used by the scheduler, they are wrappers for the scheduler to call the manager objects.
