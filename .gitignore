@@ -1,4 +1,6 @@
-data/*
+data/** 
 __pycache__
 .env
 .pytest_cache
+**.pyc
+dist/**
