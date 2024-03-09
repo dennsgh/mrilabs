@@ -5,6 +5,9 @@ from pathlib import Path
 from typing import Dict, Tuple
 
 os.environ["PYQTGRAPH_QT_LIB"] = "PyQt6"
+from importlib.resources import files
+from importlib.resources import path as resource_path
+
 import pyvisa
 import qdarktheme
 from PyQt6.QtCore import QLocale
@@ -174,7 +177,14 @@ def create_app(args_dict: dict) -> Tuple[QApplication, MainWindow]:
     window = MainWindow(args_dict)
 
     qdarktheme.setup_theme()
-    app_icon = QIcon(Path(os.getenv("ASSETS"), "favicon.ico").as_posix())
+
+    # Assuming 'mrilabs.assets' is a valid package path
+    with resource_path("mrilabs.assets", "favicon.ico") as icon_path:
+        app_icon = QIcon(icon_path.as_posix())
+
+    # Or using 'files' for a more modern approach (Python >= 3.9)
+    app_icon = QIcon(files("mrilabs.assets").joinpath("favicon.ico"))
+
     app.setWindowIcon(app_icon)
     window.setWindowIcon(app_icon)
 

@@ -27,19 +27,19 @@
   "terminal.integrated.env.linux": {
     "WORKINGDIR": "${workspaceRoot}",
     "DATA": "${workspaceRoot}/data",
-    "ASSETS": "${workspaceRoot}assets",
+    "ASSETS": "${workspaceRoot}/src/mrilabs/assets",
     "PYTHONPATH": "${env:PYTHONPATH}:${workspaceRoot}/src"
   },
   "terminal.integrated.env.windows": {
     "WORKINGDIR": "${workspaceRoot}",
     "DATA": "${workspaceRoot}\\data",
-    "ASSETS": "${workspaceRoot}\\assets",
+    "ASSETS": "${workspaceRoot}\\src\\mrilabs\\assets",
     "PYTHONPATH": "${env:PYTHONPATH};${workspaceRoot}\\src"
   },
   "terminal.integrated.env.osx": {
     "WORKINGDIR": "${workspaceRoot}",
     "DATA": "${workspaceRoot}/data",
-    "ASSETS": "${workspaceRoot}assets",
+    "ASSETS": "${workspaceRoot}/src/mrilabs/assets",
     "PYTHONPATH": "${env:PYTHONPATH}:${workspaceRoot}/src"
   }
 }
