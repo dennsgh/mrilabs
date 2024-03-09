@@ -11,7 +11,7 @@ from mrilabs.utils.logging import get_logger
 logger = get_logger()
 
 
-class ParameterConfiguration(QWidget):
+class TaskParameterConfiguration(QWidget):
     """
     A class to dynamically configure and display UI components based on task parameters.
 

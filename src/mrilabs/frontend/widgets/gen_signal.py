@@ -661,15 +661,15 @@ class DG4202SignalGeneratorWidget(QWidget):
         )
 
         # Update waveform parameters
-        self.input_objects[channel]["FREQUENCY"].setText(
-            str(waveform_parameters["frequency"])
+        self.input_objects[channel]["FREQUENCY"].setValue(
+            waveform_parameters["frequency"]
         )
-        self.input_objects[channel]["AMPLITUDE"].setText(
-            str(waveform_parameters["amplitude"])
+        self.input_objects[channel]["AMPLITUDE"].setValue(
+            waveform_parameters["amplitude"]
         )
-        self.input_objects[channel]["OFFSET"].setText(
-            str(waveform_parameters["offset"])
-        )
+        self.input_objects[channel]["OFFSET"].setValue(waveform_parameters["offset"])
+        # Assuming WAVEFORM_TYPE is a QComboBox or similar, this line remains unchanged
+
         self.input_objects[channel]["WAVEFORM_TYPE"].setCurrentText(
             waveform_parameters["waveform_type"]
         )

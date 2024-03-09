@@ -16,7 +16,7 @@ from PyQt6.QtWidgets import (
 
 from mrilabs.frontend.pages import factory
 from mrilabs.frontend.widgets.sch_exp_popup import ExperimentConfigPopup
-from mrilabs.frontend.widgets.sch_job_popup import JobConfigPopup, JobDetailsDialog
+from mrilabs.frontend.widgets.sch_task_popup import JobDetailsDialog, TaskConfigPopup
 from mrilabs.scheduler.timekeeper import Timekeeper
 from mrilabs.utils import logging as logutils
 from mrilabs.utils.logging import get_logger
@@ -28,7 +28,7 @@ class SchedulerWidget(QWidget):
     def __init__(self, timekeeper: Timekeeper = None, root_callback: Callable = None):
         super().__init__()
         self.timekeeper = timekeeper or factory.timekeeper
-        self.job_popup = JobConfigPopup(self.timekeeper, self.popup_callback)
+        self.job_popup = TaskConfigPopup(self.timekeeper, self.popup_callback)
         self.experiment_popup = ExperimentConfigPopup(
             self.timekeeper, self.popup_callback
         )

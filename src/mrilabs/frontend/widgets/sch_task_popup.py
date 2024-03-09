@@ -25,14 +25,14 @@ from mrilabs.frontend.header import DELAY_KEYWORD, TASKS_MISSING, TIMESTAMP_KEYW
 from mrilabs.frontend.tasks.model import Experiment, Task
 from mrilabs.frontend.tasks.task_validator import Validator
 from mrilabs.frontend.tasks.tasks import TaskName, get_tasks
-from mrilabs.frontend.widgets.sch_parameters import ParameterConfiguration
+from mrilabs.frontend.widgets.sch_task_parameters import TaskParameterConfiguration
 from mrilabs.scheduler.timekeeper import Timekeeper
 from mrilabs.utils.logging import get_logger
 
 logger = get_logger()
 
 
-class JobConfigPopup(QDialog):
+class TaskConfigPopup(QDialog):
 
     def __init__(self, timekeeper: Timekeeper, callback: Callable):
         super().__init__()
@@ -80,7 +80,7 @@ class JobConfigPopup(QDialog):
         self.gridLayout.addWidget(timeConfigGroup, 1, 0)
 
     def setupParameterConfigurationGroup(self):
-        self.parameterConfig = ParameterConfiguration(
+        self.parameterConfig = TaskParameterConfiguration(
             task_dictionary=self.task_dict,
             parent=self,
             task_enum=self.task_enum,
@@ -284,7 +284,7 @@ class JobConfigPopup(QDialog):
         selected_task = self.taskSelect.currentText()
         schedule_time = self.getDateTimeFromInputs()
         try:
-            # Get parameters from ParameterConfiguration
+            # Get parameters from TaskParameterConfiguration
             params = self.parameterConfig.getConfiguration()
 
             self.timekeeper.add_job(
