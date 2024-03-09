@@ -17,8 +17,17 @@ def test_killed_state(mock_device: DG4202Mock):
     assert mock_device.is_connection_alive() is False
 
     # Ensure operations are blocked in killed state
-    with pytest.raises(Exception, match="Device is disconnected!"):
+    with pytest.raises(Exception, match="Device DG4202Mock is disconnected!"):
         mock_device.set_waveform(channel=1, waveform_type="SIN")
+
+
+def test_device_disconnected_behavior():
+    device = DG4202Mock()
+    device.simulate_kill(True)  # Simulate device disconnection
+
+    # Verify that operations are blocked and raise the expected exception
+    with pytest.raises(Exception, match="Device DG4202Mock is disconnected!"):
+        device.set_waveform(channel=1, waveform_type="SIN")
 
 
 def test_state_change_on_write(mock_device: DG4202Mock):
@@ -38,12 +47,3 @@ def test_read_operations(mock_device: DG4202Mock):
 
     # Verify that the read method returns the expected value
     assert mock_device.interface.read("SOURce1:FUNCtion?") == "RAMP"
-
-
-def test_device_disconnected_behavior():
-    device = DG4202Mock()
-    device.simulate_kill(True)  # Simulate device disconnection
-
-    # Verify that operations are blocked and raise the expected exception
-    with pytest.raises(Exception, match="Device is disconnected!"):
-        device.set_waveform(channel=1, waveform_type="SIN")
