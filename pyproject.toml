@@ -26,6 +26,7 @@ python-dotenv = {extras = ["cli"], version = "^1.0.1"}
 pydantic = "^2.6.3"
 colorlog = "^6.8.2"
 click = "^8.1.7"
+docker-py = "^1.10.6"
 
 
 [build-system]
