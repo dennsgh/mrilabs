@@ -1,6 +1,6 @@
 import pytest
 
-from mrilabs.device.dg4202 import DG4202Mock
+from sonaris.device.dg4202 import DG4202Mock
 
 
 @pytest.fixture

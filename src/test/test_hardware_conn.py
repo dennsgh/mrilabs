@@ -1,8 +1,8 @@
 import pytest
 import pyvisa
 
-from mrilabs.device.device import DeviceDetector
-from mrilabs.device.dg4202 import DG4202, Interface
+from sonaris.device.device import DeviceDetector
+from sonaris.device.dg4202 import DG4202, Interface
 
 # @pytest.mark.hardware
 # def test_DeviceDetector_detect_device():

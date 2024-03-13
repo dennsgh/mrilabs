@@ -2,7 +2,7 @@ from unittest.mock import Mock, call
 
 import pytest
 
-from mrilabs.device.dg4202 import DG4202
+from sonaris.device.dg4202 import DG4202
 
 
 @pytest.fixture

@@ -1,4 +1,4 @@
-# mrilabs
+# sonaris
 
 ## Dependencies
 
@@ -21,40 +21,40 @@ To setup dependencies on the terminal:
 poetry install --no-root
 poetry shell
 # Running the app
-python -m mrilabs run --hardware-mock
+python -m sonaris run --hardware-mock
 ```
 
 The generated .env file will look as such:
 ```
-WORKINGDIR='C:/source/mrilabs'
-CONFIG='C:/source/mrilabs/etc'
-DATA='C:/source/mrilabs/data'
-PYTHONPATH='C:\source\mrilabs\frontend\src;C:\source\mrilabs\src'
-ASSETS='C:/source/mrilabs/frontend/assets'
-LOGS='C:/source/mrilabs/logs'
+WORKINGDIR='C:/source/sonaris'
+CONFIG='C:/source/sonaris/etc'
+DATA='C:/source/sonaris/data'
+PYTHONPATH='C:\source\sonaris\frontend\src;C:\source\sonaris\src'
+ASSETS='C:/source/sonaris/frontend/assets'
+LOGS='C:/source/sonaris/logs'
 ```
 
 ## Installing and Running MRILabs
 
 A stable distribution of the MRILabs
 ```
-pip install mrilabs
+pip install sonaris
 ```
 
-When not utilizing a ```.env``` file it will attempt to use $HOME/.mrilabs
+When not utilizing a ```.env``` file it will attempt to use $HOME/.sonaris
 
 Running the app
 ```
-python -m mrilabs run
+python -m sonaris run
 ```
 
 Running the app from source
 ```
 poetry install --no-root
-poetry run python -m mrilabs run
+poetry run python -m sonaris run
 ```
 
 Running the app for hardware-mock
 ```
-poetry run python -m mrilabs run --hardware-mock
+poetry run python -m sonaris run --hardware-mock
 ```

@@ -1,6 +1,6 @@
 {
   "python.testing.pytestArgs": [
-    "mrilabs/testing"
+    "sonaris/testing"
   ],
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true,
@@ -27,19 +27,19 @@
   "terminal.integrated.env.linux": {
     "WORKINGDIR": "${workspaceRoot}",
     "DATA": "${workspaceRoot}/data",
-    "ASSETS": "${workspaceRoot}/src/mrilabs/assets",
+    "ASSETS": "${workspaceRoot}/src/sonaris/assets",
     "PYTHONPATH": "${env:PYTHONPATH}:${workspaceRoot}/src"
   },
   "terminal.integrated.env.windows": {
     "WORKINGDIR": "${workspaceRoot}",
     "DATA": "${workspaceRoot}\\data",
-    "ASSETS": "${workspaceRoot}\\src\\mrilabs\\assets",
+    "ASSETS": "${workspaceRoot}\\src\\sonaris\\assets",
     "PYTHONPATH": "${env:PYTHONPATH};${workspaceRoot}\\src"
   },
   "terminal.integrated.env.osx": {
     "WORKINGDIR": "${workspaceRoot}",
     "DATA": "${workspaceRoot}/data",
-    "ASSETS": "${workspaceRoot}/src/mrilabs/assets",
+    "ASSETS": "${workspaceRoot}/src/sonaris/assets",
     "PYTHONPATH": "${env:PYTHONPATH}:${workspaceRoot}/src"
   }
 }

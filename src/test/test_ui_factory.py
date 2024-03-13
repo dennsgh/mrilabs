@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import (
     QSpinBox,
 )
 
-from mrilabs.frontend.widgets.ui_factory import UIComponentFactory
+from sonaris.frontend.widgets.ui_factory import UIComponentFactory
 
 
 class TestUIComponentFactory:

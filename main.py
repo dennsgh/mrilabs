@@ -3,15 +3,15 @@ import signal
 
 from dotenv import load_dotenv
 
-from mrilabs.app import run_application, signal_handler
-from mrilabs.utils.logging import get_logger
+from sonaris.app import run_application, signal_handler
+from sonaris.utils.logging import get_logger
 
 logger = get_logger()
 if __name__ == "__main__":
-    # Not recommended anymore to run this way. (mrilabs/__main__.py controls the argument parsing using click)
-    # Do python -m mrilabs run --hardware-mock to run the app in hardware mock mode instead ( or poetry run python -m mrilabs run --hardware-mock)
+    # Not recommended anymore to run this way. (sonaris/__main__.py controls the argument parsing using click)
+    # Do python -m sonaris run --hardware-mock to run the app in hardware mock mode instead ( or poetry run python -m sonaris run --hardware-mock)
     # You can do packaged runs as well by doing 'pip install .'
-    parser = argparse.ArgumentParser(description="Run the mrilabs application.")
+    parser = argparse.ArgumentParser(description="Run the sonaris application.")
     parser.add_argument(
         "--hardware-mock",
         action="store_true",

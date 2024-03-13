@@ -1,7 +1,7 @@
 from unittest.mock import Mock, patch
 
-from mrilabs.device.device import Device, DeviceDetector
-from mrilabs.device.interface import EthernetInterface, USBInterface
+from sonaris.device.device import Device, DeviceDetector
+from sonaris.device.interface import EthernetInterface, USBInterface
 
 
 class GenericDevice(Device):
