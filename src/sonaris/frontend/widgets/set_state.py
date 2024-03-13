@@ -17,7 +17,7 @@ class SettingsStateWidget(QWidget):
         layout = QVBoxLayout()
 
         # Add a label and edit for a sample setting
-        self.setting_label = QLabel(f"MRILabs {VERSION_STRING}")
+        self.setting_label = QLabel(f"Sonaris {VERSION_STRING}")
         # self.setting_edit = QLineEdit(self)
         # self.setting_edit.setText(self.settings.get("sample_setting", ""))
 

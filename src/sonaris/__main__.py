@@ -31,13 +31,13 @@ def ensure_env_variables():
 @click.group()
 def cli():
     """
-    MRI Labs Command Line Interface.
+    Sonaris Command Line Interface.
     """
     pass
 
 
 def run_application(hardware_mock):
-    """Function to initialize and run the MRI Labs application."""
+    """Function to initialize and run the Sonaris application."""
     args_dict = {"hardware_mock": hardware_mock}
     logger.info(args_dict)
     app, window = create_app(args_dict)
@@ -50,7 +50,7 @@ def run_application(hardware_mock):
     "--hardware-mock", "-hm", is_flag=True, help="Run the app in hardware mock mode."
 )
 def run(hardware_mock):
-    """Run the MRI Labs application."""
+    """Run the Sonaris application."""
     signal.signal(signal.SIGINT, signal_handler)
     try:
         ensure_env_variables()

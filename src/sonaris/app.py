@@ -86,7 +86,7 @@ class MainWindow(ModularMainWindow):
     def __init__(self, args_dict: dict) -> None:
         super().__init__()
         menu_bar = MainMenuBar(self)
-        self.setWindowTitle("MRI Labs")
+        self.setWindowTitle("Sonaris")
         self.setMenuBar(menu_bar)
         self.last_page = ""
         # ---------------------------------------------------------------------- #

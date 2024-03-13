@@ -1,4 +1,4 @@
-# sonaris
+# Sonaris
 
 ## Dependencies
 
@@ -34,9 +34,9 @@ ASSETS='C:/source/sonaris/frontend/assets'
 LOGS='C:/source/sonaris/logs'
 ```
 
-## Installing and Running MRILabs
+## Installing and Running Sonaris
 
-A stable distribution of the MRILabs
+A stable distribution of the Sonaris
 ```
 pip install sonaris
 ```

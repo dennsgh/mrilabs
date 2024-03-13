@@ -9,7 +9,7 @@ class VersionWindow(QMessageBox):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Version Information")
-        self.setText(f"MRILabs\nVersion: {VERSION_STRING}")  # Example version text
+        self.setText(f"Sonaris\nVersion: {VERSION_STRING}")  # Example version text
         self.setIcon(QMessageBox.Icon.Information)
 
 
