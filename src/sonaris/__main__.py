@@ -1,4 +1,5 @@
 import os
+import platform
 import signal
 
 import click
@@ -10,6 +11,12 @@ from sonaris.utils.logging import get_logger
 
 # Configure logger
 logger = get_logger()
+
+if platform.system() == "Windows":
+    import ctypes
+
+    myappid = "sonaris.sonaris.dummy.string"  # arbitrary string
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 
 def ensure_env_variables():
@@ -55,6 +62,7 @@ def run(hardware_mock):
     try:
         ensure_env_variables()
         logger.info("Running application...")
+
         run_application(hardware_mock)
     except KeyboardInterrupt:
         logger.info("Exit signal detected.")
