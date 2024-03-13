@@ -2,7 +2,7 @@ import os
 from enum import Enum
 from pathlib import Path
 
-VERSION_STRING = "v0.1.0"
+VERSION_STRING = "v0.1.1"
 
 GRAPH_RGB = (255, 255, 255)
 OSCILLOSCOPE_BUFFER_SIZE = 512
