@@ -1,5 +1,9 @@
 # Sonaris
 
+Sonaris is a hardware device control platform developed to control lab devices and provide basic scheduling and monitoring utilities in a lab setting.
+
+The device hardware written for it are at the moment quite limited and support only DG4202 Signal Generator and the EDUX1002A Oscilloscope, written to facilitate a thesis project.
+
 ## Dependencies
 
 To setup the environment for env variables used in the app
