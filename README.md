@@ -1,4 +1,13 @@
-# Sonaris
+<h1 align="center" style="border-bottom: none">
+    <a href="//github.com/dennsgh/avaris" target="_blank"><img alt="Sonaris" src="etc/sonaris.png"></a><br>Sonaris Automation Framework
+</h1>
+
+<div align="center">
+
+</div>
+ 
+
+
 
 Sonaris is a hardware device control platform developed to control lab devices and provide basic scheduling and monitoring utilities in a lab setting.
 
