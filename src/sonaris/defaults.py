@@ -21,7 +21,7 @@ class DeviceName(Enum):
 
 DEVICE_LIST = [DeviceName.DG4202.value, DeviceName.EDUX1002A.value]
 
-DEFAULT_DATADIR = Path().home() / f".{APP_NAME}"
+DEFAULT_DATADIR = Path().home() / f".{APP_NAME.lower()}"
 DEFAULT_DATADIR.mkdir(parents=True, exist_ok=True)
 
 # Assuming DEFAULT_DATADIR is already a Path object
