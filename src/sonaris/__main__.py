@@ -2,21 +2,20 @@ import os
 import platform
 import signal
 
-import click
-from dotenv import load_dotenv
-
-# Assuming create_app is defined elsewhere in your application
-from sonaris.app import create_app, signal_handler
-from sonaris.utils.logging import get_logger
-
-# Configure logger
-logger = get_logger()
-
 if platform.system() == "Windows":
     import ctypes
 
     myappid = "sonaris.sonaris.dummy.string"  # arbitrary string
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+import click
+from dotenv import load_dotenv
+
+# Assuming create_app is defined elsewhere in your application
+from sonaris.app import create_app, signal_handler
+from sonaris.utils.log import get_logger
+
+# Configure logger
+logger = get_logger()
 
 
 def ensure_env_variables():
@@ -33,7 +32,8 @@ def ensure_env_variables():
     for var in key_env_vars:
         if not os.getenv(var):
             os.environ[var] = ""
-
+            continue
+        print(f"{var}: {os.getenv(var)}")
 
 @click.group()
 def cli():
@@ -43,30 +43,29 @@ def cli():
     pass
 
 
-def run_application(hardware_mock):
+def run_application(hardware_mock,grafana):
     """Function to initialize and run the Sonaris application."""
-    args_dict = {"hardware_mock": hardware_mock}
+    args_dict = {"hardware_mock": hardware_mock,
+                 "grafana": grafana}
     logger.info(args_dict)
     app, window = create_app(args_dict)
     window.show()
     app.exec()
 
 
+
 @cli.command()
-@click.option(
-    "--hardware-mock", "-hm", is_flag=True, help="Run the app in hardware mock mode."
-)
-def run(hardware_mock):
+@click.option("--hardware-mock", "-hm", is_flag=True, help="Run the app in hardware mock mode.")
+@click.option("--grafana", is_flag=True, help="Start Grafana container alongside the application. Requires Docker.")
+def run(hardware_mock, grafana):
     """Run the Sonaris application."""
     signal.signal(signal.SIGINT, signal_handler)
     try:
         ensure_env_variables()
         logger.info("Running application...")
-
-        run_application(hardware_mock)
+        run_application(hardware_mock, grafana)
     except KeyboardInterrupt:
         logger.info("Exit signal detected.")
-
 
 if __name__ == "__main__":
     cli()

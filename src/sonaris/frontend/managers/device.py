@@ -10,7 +10,7 @@ import pyvisa
 from sonaris.device.data import DataSource
 from sonaris.device.device import Device, DeviceDetector, MockDevice
 from sonaris.frontend.managers.state_manager import StateManager
-from sonaris.utils.logging import get_logger
+from sonaris.utils.log import get_logger
 
 logger = get_logger()
 

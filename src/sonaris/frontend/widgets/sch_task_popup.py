@@ -21,13 +21,13 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from sonaris.frontend.header import DELAY_KEYWORD, TASKS_MISSING, TIMESTAMP_KEYWORD
+from sonaris.defaults import DELAY_KEYWORD, TASKS_MISSING, TIMESTAMP_KEYWORD
 from sonaris.frontend.tasks.model import Experiment, Task
 from sonaris.frontend.tasks.task_validator import Validator
 from sonaris.frontend.tasks.tasks import TaskName, get_tasks
 from sonaris.frontend.widgets.sch_task_parameters import TaskParameterConfiguration
 from sonaris.scheduler.timekeeper import Timekeeper
-from sonaris.utils.logging import get_logger
+from sonaris.utils.log import get_logger
 
 logger = get_logger()
 

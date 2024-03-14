@@ -1,5 +1,4 @@
 import json
-import os
 from datetime import datetime
 from pathlib import Path
 from typing import Dict
@@ -19,9 +18,9 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from sonaris.frontend.header import MONITOR_FILE
+from sonaris.defaults import MONITOR_FILE
 from sonaris.frontend.managers.device import DeviceManager
-from sonaris.utils import logging as logutils
+from sonaris.utils import log as logutils
 
 logger = logutils.get_logger()
 
@@ -131,25 +130,28 @@ class DeviceMonitorWidget(QWidget):
         self.status_table.setRowCount(len(self.device_managers))
         for row, (device_name, manager) in enumerate(self.device_managers.items()):
             self.update_device_status(device_name, manager, row)
-
+ 
     def update_device_status(self, device_name: str, manager: DeviceManager, row: int):
-        is_alive = manager.is_device_alive()
-        if is_alive and self.device_statuses[device_name] != is_alive:
-            self.log_event(f"{device_name} Connected")
-        elif not is_alive and self.device_statuses[device_name] != is_alive:
-            self.log_event(f"{device_name} Disconnected")
+        try:
+            is_alive = manager.is_device_alive()
+            if is_alive and self.device_statuses[device_name] != is_alive:
+                self.log_event(f"{device_name} Connected")
+            elif not is_alive and self.device_statuses[device_name] != is_alive:
+                self.log_event(f"{device_name} Disconnected")
 
-        self.device_statuses[device_name] = is_alive
-        status = "Connected" if is_alive else "Disconnected"
+            self.device_statuses[device_name] = is_alive
+            status = "Connected" if is_alive else "Disconnected"
 
-        # Create QTableWidgetItem instances for device name and status
-        device_item = QTableWidgetItem(device_name)
-        status_item = QTableWidgetItem(status)
+            # Create QTableWidgetItem instances for device name and status
+            device_item = QTableWidgetItem(device_name)
+            status_item = QTableWidgetItem(status)
 
-        # Make the items non-editable
-        device_item.setFlags(device_item.flags() & ~QtCore.Qt.ItemFlag.ItemIsEditable)
-        status_item.setFlags(status_item.flags() & ~QtCore.Qt.ItemFlag.ItemIsEditable)
+            # Make the items non-editable
+            device_item.setFlags(device_item.flags() & ~QtCore.Qt.ItemFlag.ItemIsEditable)
+            status_item.setFlags(status_item.flags() & ~QtCore.Qt.ItemFlag.ItemIsEditable)
 
-        # Set the items in the table
-        self.status_table.setItem(row, 0, device_item)
-        self.status_table.setItem(row, 1, status_item)
+            # Set the items in the table
+            self.status_table.setItem(row, 0, device_item)
+            self.status_table.setItem(row, 1, status_item)
+        except Exception as e:
+            logger.error(f"Error updating device statuses: {e}")

@@ -6,7 +6,7 @@ from pathlib import Path
 
 from colorlog import ColoredFormatter
 
-from sonaris.frontend.header import LOG_DIR
+from sonaris.defaults import LOG_DIR
 
 # Global logger variable
 logger = None

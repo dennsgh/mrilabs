@@ -4,7 +4,7 @@ from sonaris.device.data import DataBuffer
 
 # Import classes and modules from sonaris.device module as needed.
 from sonaris.device.edux1002a import EDUX1002A, EDUX1002ADataSource, EDUX1002AMock
-from sonaris.frontend.header import OSCILLOSCOPE_BUFFER_SIZE
+from sonaris.defaults import OSCILLOSCOPE_BUFFER_SIZE
 from sonaris.frontend.managers.device import DeviceManager
 from sonaris.frontend.managers.state_manager import StateManager
 

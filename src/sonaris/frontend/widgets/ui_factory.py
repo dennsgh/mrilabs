@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from sonaris.frontend.header import DECIMAL_POINTS
+from sonaris.defaults import DECIMAL_POINTS
 
 
 class UIComponentFactory:

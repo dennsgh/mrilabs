@@ -6,8 +6,8 @@ from typing import Any, Callable
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from sonaris.scheduler.functionmap import FunctionMap
-from sonaris.utils.logging import get_logger
-
+from sonaris.utils.log import get_logger
+from apscheduler.schedulers import SchedulerNotRunningError
 
 class Worker:
     def __init__(
@@ -95,8 +95,13 @@ class Worker:
         """
         Stops the worker.
         """
-        self.scheduler.shutdown()
-        self.logger.debug("APScheduler worker stopped.")
+        try:
+            self.scheduler.shutdown()
+            self.logger.info("APScheduler worker stopped.")
+        except SchedulerNotRunningError as e:
+            self.logger.info("APScheduler is already stopped.")
+        except Exception as e:
+            self.logger.error(f"Error stopping APScheduler: {e}.")
 
     def execute_task(
         self,

@@ -14,10 +14,10 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-import sonaris.frontend.header as header
-from sonaris.frontend.header import TICK_INTERVAL
+import sonaris.defaults as defaults
+from sonaris.defaults import TICK_INTERVAL
 from sonaris.frontend.managers.edux1002a import EDUX1002AManager
-from sonaris.utils.logging import get_logger
+from sonaris.utils.log import get_logger
 
 logger = get_logger()
 
@@ -78,7 +78,7 @@ class EDUX1002AOscilloscopeWidget(QWidget):
         channel_layout = QVBoxLayout()
 
         plot_widget = pg.PlotWidget()
-        plot_widget.setBackground(header.GRAPH_RGB)
+        plot_widget.setBackground(defaults.GRAPH_RGB)
 
         plot_data = plot_widget.plot([], pen="y")
         channel_layout.addWidget(plot_widget)

@@ -5,9 +5,9 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from pydantic import ValidationError
 
-from sonaris.frontend.header import EXPERIMENT_KEYWORD, ErrorLevel
+from sonaris.defaults import EXPERIMENT_KEYWORD, ErrorLevel
 from sonaris.frontend.tasks.model import Experiment, ExperimentWrapper, Task
-from sonaris.utils.logging import get_logger
+from sonaris.utils.log import get_logger
 
 logger = get_logger()
 

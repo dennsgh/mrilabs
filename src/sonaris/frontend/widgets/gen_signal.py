@@ -18,10 +18,10 @@ from PyQt6.QtWidgets import (
 )
 
 from sonaris.device.dg4202 import DG4202
-from sonaris.frontend.header import DECIMAL_POINTS, NOT_FOUND_STRING
+from sonaris.defaults import DECIMAL_POINTS, NOT_FOUND_STRING
 from sonaris.frontend.managers.dg4202 import DG4202Manager
 from sonaris.frontend.pages import plotter
-from sonaris.utils.logging import get_logger
+from sonaris.utils.log import get_logger
 
 logger = get_logger()
 

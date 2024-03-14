@@ -2,8 +2,8 @@ from datetime import datetime, timedelta
 from enum import Enum
 
 from sonaris.device.dg4202 import DG4202
-from sonaris.frontend.header import DeviceName
-from sonaris.frontend.pages import factory
+from sonaris.defaults import DeviceName
+from sonaris import factory
 from sonaris.frontend.tasks.task_decorator import (
     parameter_annotations,
     parameter_constraints,

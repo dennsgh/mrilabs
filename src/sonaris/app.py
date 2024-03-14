@@ -14,16 +14,21 @@ from PyQt6.QtCore import QLocale
 from PyQt6.QtGui import QGuiApplication, QIcon
 from PyQt6.QtWidgets import QApplication, QStackedWidget, QWidget
 
-from sonaris.frontend.header import (
+from sonaris.defaults import (
     MONITOR_FILE,
     OSCILLOSCOPE_BUFFER_SIZE,
     TIMEKEEPER_JOBS_FILE,
     DeviceName,
+    APP_NAME,
+    VERSION_STRING,
+    DEFAULT_DATADIR,
+    GF_DATASOURCES_DIR,
+    GF_DASHBOARDS_DIR,
 )
 from sonaris.frontend.managers.dg4202 import DG4202Manager
 from sonaris.frontend.managers.edux1002a import EDUX1002AManager
 from sonaris.frontend.managers.state_manager import StateManager
-from sonaris.frontend.pages import factory
+from sonaris import factory
 from sonaris.frontend.pages.general import GeneralPage
 from sonaris.frontend.pages.monitor import MonitorPage
 from sonaris.frontend.pages.scheduler import SchedulerPage
@@ -35,17 +40,25 @@ from sonaris.frontend.widgets.templates import ModularMainWindow
 from sonaris.scheduler import registry
 from sonaris.scheduler.timekeeper import Timekeeper
 from sonaris.scheduler.worker import Worker
-from sonaris.utils.logging import get_logger
-
+from sonaris.utils.log import get_logger
+from sonaris.services.grafana import GrafanaContainerService
+from sonaris.services.datasource import DataSourceService
 logger = get_logger()
 
 # Before creating your application instance
 QLocale.setDefault(QLocale(QLocale.Language.English, QLocale.Country.UnitedStates))
 
+logger.info(f"{APP_NAME} {VERSION_STRING}")
+logger.info(f"Using {DEFAULT_DATADIR} as working directory.")
+logger.info(f"Using {TIMEKEEPER_JOBS_FILE} as persistence file.")
+logger.info(f"Using {OSCILLOSCOPE_BUFFER_SIZE} oscilloscope buffer size.")
+logger.info(f"Device events under {MONITOR_FILE}.")
 
 def signal_handler(signum, frame):
     logger.info("Exit signal detected.")
     QApplication.quit()
+    factory.grafana_container_service.stop()
+    factory.data_source_service.stop()
     factory.worker.stop_worker()
     # Invoke the default SIGINT handler to exit the application
     signal.signal(signum, signal.SIG_DFL)
@@ -53,6 +66,7 @@ def signal_handler(signum, frame):
 
 
 def init_objects(args_dict: dict):
+    #================= Hardware Managers===================#
     factory.resource_manager = pyvisa.ResourceManager()
     factory.state_manager = StateManager()
     factory.edux1002a_manager = EDUX1002AManager(
@@ -76,9 +90,24 @@ def init_objects(args_dict: dict):
         logger=logger,
     )
 
+    #================= Register Tasks ===================#
     for task_name, func_pointer in get_tasks(flatten=True).items():
         factory.worker.register_task(func_pointer, task_name)
-
+    #==================== Services ======================#
+    if args_dict["grafana"]:
+        factory.grafana_container_service = GrafanaContainerService(
+            client=None, # Use default client instance
+            port=None # Use default port
+        )
+        factory.data_source_service = DataSourceService(
+            timekeeper=factory.timekeeper,
+            port=None, # Use default port
+            logger=logger,
+            name=f"{APP_NAME}DataSource" # Customize as needed
+            )
+        factory.data_source_service.write_provisioning_files(dashboards_dir=GF_DASHBOARDS_DIR, datasources_dir=GF_DATASOURCES_DIR)
+        factory.data_source_service.start()
+        factory.grafana_container_service.start()
     factory.worker.start_worker()
 
 
@@ -86,7 +115,7 @@ class MainWindow(ModularMainWindow):
     def __init__(self, args_dict: dict) -> None:
         super().__init__()
         menu_bar = MainMenuBar(self)
-        self.setWindowTitle("Sonaris")
+        self.setWindowTitle(APP_NAME)
         self.setMenuBar(menu_bar)
         self.last_page = ""
         # ---------------------------------------------------------------------- #
@@ -185,7 +214,7 @@ def create_app(args_dict: dict) -> Tuple[QApplication, MainWindow]:
     app.setWindowIcon(app_icon)
     window.setWindowIcon(app_icon)
 
-    window.setWindowTitle("sonaris")
+    window.setWindowTitle(APP_NAME)
     window.resize(640, 400)
     logger.info(f"Window size after resize: {window.size()} ")
     return app, window

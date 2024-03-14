@@ -4,7 +4,7 @@ import signal
 from dotenv import load_dotenv
 
 from sonaris.app import run_application, signal_handler
-from sonaris.utils.logging import get_logger
+from sonaris.utils.log import get_logger
 
 logger = get_logger()
 if __name__ == "__main__":

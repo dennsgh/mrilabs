@@ -14,12 +14,12 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from sonaris.frontend.pages import factory
+from sonaris import factory
 from sonaris.frontend.widgets.sch_exp_popup import ExperimentConfigPopup
 from sonaris.frontend.widgets.sch_task_popup import TaskConfigPopup, TaskDetailsDialog
 from sonaris.scheduler.timekeeper import Timekeeper
-from sonaris.utils import logging as logutils
-from sonaris.utils.logging import get_logger
+from sonaris.utils import log as logutils
+from sonaris.utils.log import get_logger
 
 logger = get_logger()
 

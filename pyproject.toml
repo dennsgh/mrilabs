@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sonaris"
-version = "0.1.1"
+version = "0.1.2"
 description = "Software Framework for Task Automation and Scheduling"
 authors = ["dennis <denngohis@gmail.com>"]
 license = "MIT"
@@ -26,7 +26,10 @@ python-dotenv = {extras = ["cli"], version = "^1.0.1"}
 pydantic = "^2.6.3"
 colorlog = "^6.8.2"
 click = "^8.1.7"
-docker-py = "^1.10.6"
+pypiwin32 = "^223"
+uvicorn = "^0.28.0"
+fastapi = "^0.110.0"
+docker = "^7.0.0"
 
 
 [build-system]

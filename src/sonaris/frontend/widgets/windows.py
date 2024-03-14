@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QLabel, QMessageBox, QPushButton, QVBoxLayout, QWidget
 
-import sonaris.frontend.pages.factory as factory
-from sonaris.frontend.header import VERSION_STRING
+import sonaris.factory as factory
+from sonaris.defaults import VERSION_STRING
 
 
 class VersionWindow(QMessageBox):

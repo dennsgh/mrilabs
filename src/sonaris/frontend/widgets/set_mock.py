@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import (
 )
 
 from sonaris.frontend.managers.device import DeviceManager
-from sonaris.utils.logging import get_logger
+from sonaris.utils.log import get_logger
 
 logger = get_logger()
 

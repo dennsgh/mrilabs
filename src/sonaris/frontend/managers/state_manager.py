@@ -6,8 +6,8 @@ from pathlib import Path
 
 from filelock import FileLock
 
-from sonaris.frontend.header import STATE_FILE
-from sonaris.utils import logging as logutils
+from sonaris.defaults import STATE_FILE
+from sonaris.utils import log as logutils
 
 # Setting up basic logging
 logging.basicConfig(

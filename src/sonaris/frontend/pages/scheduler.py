@@ -2,7 +2,7 @@ from typing import Callable
 
 from PyQt6.QtWidgets import QVBoxLayout
 
-from sonaris.frontend.pages import factory
+from sonaris import factory
 from sonaris.frontend.widgets.sch_scheduler import SchedulerWidget
 from sonaris.frontend.widgets.templates import BasePage
 from sonaris.scheduler.timekeeper import Timekeeper

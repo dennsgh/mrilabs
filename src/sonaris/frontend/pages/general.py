@@ -2,7 +2,7 @@ from typing import Callable
 
 from PyQt6.QtWidgets import QLabel, QVBoxLayout
 
-from sonaris.frontend.header import TICK_INTERVAL
+from sonaris.defaults import TICK_INTERVAL
 from sonaris.frontend.managers.dg4202 import DG4202Manager
 from sonaris.frontend.managers.edux1002a import EDUX1002AManager
 from sonaris.frontend.widgets.gen_oscilloscope import EDUX1002AOscilloscopeWidget

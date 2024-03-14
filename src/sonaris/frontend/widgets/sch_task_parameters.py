@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QHBoxLayout, QLabel, QStackedWidget, QVBoxLayout, QW
 from sonaris.frontend.widgets.ui_factory import (  # Assuming custom import, details unknown
     UIComponentFactory,
 )
-from sonaris.utils.logging import get_logger
+from sonaris.utils.log import get_logger
 
 logger = get_logger()
 

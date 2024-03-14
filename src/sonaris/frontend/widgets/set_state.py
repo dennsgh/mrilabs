@@ -3,7 +3,7 @@ from pathlib import Path
 
 from PyQt6.QtWidgets import QLabel, QLineEdit, QPushButton, QVBoxLayout, QWidget
 
-from sonaris.frontend.header import VERSION_STRING
+from sonaris.defaults import VERSION_STRING
 
 
 class SettingsStateWidget(QWidget):

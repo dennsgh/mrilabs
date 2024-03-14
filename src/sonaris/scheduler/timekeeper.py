@@ -6,9 +6,9 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Callable, Dict
 
-from sonaris.frontend.header import DEFAULT_DATADIR
+from sonaris.defaults import DEFAULT_DATADIR
 from sonaris.scheduler.worker import Worker
-from sonaris.utils.logging import create_numbered_backup, get_logger
+from sonaris.utils.log import create_numbered_backup, get_logger
 
 
 class Timekeeper:
@@ -39,7 +39,8 @@ class Timekeeper:
         self.reload_function_map()
         self.__reschedule_jobs__()
         self.user_callback = user_callback
-
+    def get_archive(self) -> Dict[str, Any]:
+        return json.loads(self.archive.read_text())
     def set_callback(self, user_callback: Callable) -> None:
         self.user_callback = user_callback
 

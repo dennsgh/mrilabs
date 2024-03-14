@@ -8,7 +8,7 @@ from sonaris.frontend.managers.device import DeviceManager
 from sonaris.frontend.widgets.set_mock import MockHardwareWidget
 from sonaris.frontend.widgets.set_state import SettingsStateWidget
 from sonaris.frontend.widgets.templates import BasePage
-from sonaris.frontend.header import SETTINGS_FILE
+from sonaris.defaults import SETTINGS_FILE
 
 class SettingsPage(BasePage):
     PAGE_NAME = "Settings"
