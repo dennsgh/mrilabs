@@ -3,7 +3,7 @@ from enum import Enum
 from pathlib import Path
 
 APP_NAME = "Sonaris"
-VERSION_STRING = "v0.1.2"
+VERSION_STRING = "v0.1.3"
 
 GRAPH_RGB = (255, 255, 255)
 OSCILLOSCOPE_BUFFER_SIZE = 512
@@ -18,6 +18,7 @@ class ErrorLevel(Enum):
 class DeviceName(Enum):
     DG4202 = "DG4202"
     EDUX1002A = "EDUX1002A"
+
 
 DEVICE_LIST = [DeviceName.DG4202.value, DeviceName.EDUX1002A.value]
 
@@ -65,12 +66,12 @@ EXPERIMENT_KEYWORD = "experiment"
 DELAY_KEYWORD = "delay"
 # GRAFANA DEFAULTS
 DEFAULT_TAB_STYLE = {"height": "30px", "padding": "2px"}
-GF_SECURITY_ADMIN_PASSWORD = os.getenv("GF_SECURITY_ADMIN_PASSWORD","admin")
-GF_PORT= int(os.getenv("GF_PORT","3000"))
-DATA_SOURCE_PORT = int(os.getenv("DATA_SOURCE_PORT","5000"))
-DATA_SOURCE_NAME = str(os.getenv("DATA_SOURCE_NAME",f"{APP_NAME}DataSource"))
+GF_SECURITY_ADMIN_PASSWORD = os.getenv("GF_SECURITY_ADMIN_PASSWORD", "admin")
+GF_PORT = int(os.getenv("GF_PORT", "3000"))
+DATA_SOURCE_PORT = int(os.getenv("DATA_SOURCE_PORT", "5000"))
+DATA_SOURCE_NAME = str(os.getenv("DATA_SOURCE_NAME", f"{APP_NAME}DataSource"))
 
-GF_DATASOURCES_DIR = DEFAULT_DATADIR /'provisioning' / 'datasources'
-GF_DASHBOARDS_DIR = DEFAULT_DATADIR /'provisioning' / 'dashboards'
-SONARIS_NETWORK_NAME = f"{APP_NAME.lower()}_network" 
+GF_DATASOURCES_DIR = DEFAULT_DATADIR / "provisioning" / "datasources"
+GF_DASHBOARDS_DIR = DEFAULT_DATADIR / "provisioning" / "dashboards"
+SONARIS_NETWORK_NAME = f"{APP_NAME.lower()}_network"
 # GRAFANA DEFAULTS

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sonaris"
-version = "0.1.2"
+version = "0.1.3"
 description = "Software Framework for Task Automation and Scheduling"
 authors = ["dennis <denngohis@gmail.com>"]
 license = "MIT"
