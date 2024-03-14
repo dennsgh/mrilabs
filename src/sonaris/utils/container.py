@@ -5,15 +5,41 @@ from docker.models.containers import Container
 from typing import NoReturn
 from sonaris.utils.log import get_logger
 from sonaris.defaults import SONARIS_NETWORK_NAME
+
 logger = get_logger()
-try:
-    client = docker.from_env()
-    logger.info(f"Docker client obtained: {client.__class__.__name__}")
-    network = client.networks.create(SONARIS_NETWORK_NAME, driver="bridge", check_duplicate=True)
-    logger.info(f"Docker network created: {network.__class__.__name__}")
-except Exception as e:
-    client = None
-    network = None
+
+#================================================================
+
+client = None
+network = None
+
+
+if client is None:
+    try:
+        client = docker.DockerClient.from_env()
+        logger.info(f"Docker client obtained: {client}")
+        client.ping()  # Check connection to Docker
+    except Exception as e:
+        logger.error(f"Failed to obtain Docker client: {e}")
+        client = None
+
+
+if network is None and client is not None:
+    try:
+        network = client.networks.get(SONARIS_NETWORK_NAME)
+        logger.info(f"Found existing network: {SONARIS_NETWORK_NAME}")
+    except Exception as e:
+        try:
+            network = client.networks.create(SONARIS_NETWORK_NAME, driver="bridge", check_duplicate=True)
+            logger.info(f"Created new network: {SONARIS_NETWORK_NAME}")
+        except Exception as e:
+            logger.error(f"Failed to create or retrieve network: {e}")
+            network = None
+
+    
+#================================================================
+    
+    
 def list_containers(all: bool = False) -> NoReturn:
     """
     List all containers.

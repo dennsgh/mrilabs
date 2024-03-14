@@ -38,6 +38,20 @@ ASSETS='C:/source/sonaris/frontend/assets'
 LOGS='C:/source/sonaris/logs'
 ```
 
+## Run Flags
+
+```bash
+Usage: python -m sonaris run [OPTIONS]
+
+  Run the Sonaris application.
+
+Options:
+  -hm, --hardware-mock  Run the app in hardware mock mode.
+  --grafana             Start Grafana container alongside the application.
+                        Requires Docker.
+  --help                Show this message and exit.
+```
+
 ## Installing and Running Sonaris
 
 A stable distribution of the Sonaris

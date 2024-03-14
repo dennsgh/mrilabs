@@ -29,7 +29,9 @@ click = "^8.1.7"
 pypiwin32 = "^223"
 uvicorn = "^0.28.0"
 fastapi = "^0.110.0"
+pywin32 = "^306"
 docker = "^7.0.0"
+zeroconf = "^0.131.0"
 
 
 [build-system]
