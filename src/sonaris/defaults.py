@@ -3,7 +3,7 @@ from enum import Enum
 from pathlib import Path
 
 APP_NAME = "Sonaris"
-VERSION_STRING = "v0.1.3"
+VERSION_STRING = "v0.1.4"
 
 GRAPH_RGB = (255, 255, 255)
 OSCILLOSCOPE_BUFFER_SIZE = 512
