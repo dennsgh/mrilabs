@@ -33,7 +33,6 @@ from sonaris.frontend.pages.general import GeneralPage
 from sonaris.frontend.pages.monitor import MonitorPage
 from sonaris.frontend.pages.scheduler import SchedulerPage
 from sonaris.frontend.pages.settings import SettingsPage
-from sonaris.frontend.tasks.tasks import get_tasks
 from sonaris.frontend.widgets.menu import MainMenuBar
 from sonaris.frontend.widgets.sidebar import Sidebar
 from sonaris.frontend.widgets.templates import ModularMainWindow
@@ -42,6 +41,7 @@ from sonaris.scheduler.timekeeper import Timekeeper
 from sonaris.scheduler.worker import Worker
 from sonaris.services.datasource import DataSourceService
 from sonaris.services.grafana import GrafanaService
+from sonaris.tasks.tasks import get_tasks
 from sonaris.utils.container import client, network
 from sonaris.utils.log import get_logger
 

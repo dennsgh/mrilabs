@@ -14,10 +14,10 @@ from PyQt6.QtWidgets import (
 )
 
 from sonaris.defaults import DELAY_KEYWORD, EXPERIMENT_KEYWORD
-from sonaris.frontend.tasks.task_validator import Validator
-from sonaris.frontend.tasks.tasks import TaskName, get_tasks
 from sonaris.frontend.widgets.sch_experiments import ExperimentConfiguration
 from sonaris.scheduler.timekeeper import Timekeeper
+from sonaris.tasks.task_validator import Validator
+from sonaris.tasks.tasks import TaskName, get_tasks
 from sonaris.utils.log import get_logger
 
 logger = get_logger()

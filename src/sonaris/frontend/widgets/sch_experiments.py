@@ -19,9 +19,9 @@ from PyQt6.QtWidgets import (
 )
 
 from sonaris.defaults import DELAY_KEYWORD, ErrorLevel
-from sonaris.frontend.tasks.model import Experiment, ExperimentWrapper, Task
-from sonaris.frontend.tasks.task_validator import Validator
 from sonaris.frontend.widgets.ui_factory import UIComponentFactory
+from sonaris.tasks.model import Experiment, ExperimentWrapper, Task
+from sonaris.tasks.task_validator import Validator
 from sonaris.utils.log import get_logger
 
 logger = get_logger()
