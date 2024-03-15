@@ -1,11 +1,9 @@
-<h1 align="center" style="border-bottom: none">
-    <a href="//github.com/dennsgh/avaris" target="_blank"><img alt="Sonaris" src="etc/sonaris.png"></a><br>Sonaris Automation Framework
+<h1 align="center">
+    <a href="//github.com/dennsgh/sonaris" target="_blank">
+        <img alt="Sonaris" src="etc/sonaris.png" style="max-width:100%;">
+    </a>
+    <br>Sonaris Automation Framework
 </h1>
-
-<div align="center">
-
-</div>
- 
 
 
 
