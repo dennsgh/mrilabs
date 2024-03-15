@@ -40,11 +40,9 @@ python -m sonaris run --hardware-mock
 The generated .env file will look as such:
 ```
 WORKINGDIR='C:/source/sonaris'
-CONFIG='C:/source/sonaris/etc'
 DATA='C:/source/sonaris/data'
 PYTHONPATH='C:\source\sonaris\frontend\src;C:\source\sonaris\src'
 ASSETS='C:/source/sonaris/frontend/assets'
-LOGS='C:/source/sonaris/logs'
 ```
 
 ## Run Flags
