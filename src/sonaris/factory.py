@@ -6,7 +6,7 @@ from sonaris.frontend.managers.state_manager import StateManager
 from sonaris.scheduler.timekeeper import Timekeeper
 from sonaris.scheduler.worker import Worker
 from sonaris.services.datasource import DataSourceService
-from sonaris.services.grafana import GrafanaContainerService
+from sonaris.services.grafana import GrafanaService
 # ======================================================== #
 # Place holder globals, these are initialized in app.py
 # ======================================================== #
@@ -22,5 +22,5 @@ timekeeper: Timekeeper = None
 # ======================================================== #
 # ======================Services========================== #
 # ======================================================== #
-grafana_container_service: GrafanaContainerService = None
+grafana_service: GrafanaService = None
 data_source_service: DataSourceService = None

@@ -14,21 +14,21 @@ from PyQt6.QtCore import QLocale
 from PyQt6.QtGui import QGuiApplication, QIcon
 from PyQt6.QtWidgets import QApplication, QStackedWidget, QWidget
 
+from sonaris import factory
 from sonaris.defaults import (
+    APP_NAME,
+    DEFAULT_DATADIR,
+    GF_DASHBOARDS_DIR,
+    GF_DATASOURCES_DIR,
     MONITOR_FILE,
     OSCILLOSCOPE_BUFFER_SIZE,
     TIMEKEEPER_JOBS_FILE,
-    DeviceName,
-    APP_NAME,
     VERSION_STRING,
-    DEFAULT_DATADIR,
-    GF_DATASOURCES_DIR,
-    GF_DASHBOARDS_DIR,
+    DeviceName,
 )
 from sonaris.frontend.managers.dg4202 import DG4202Manager
 from sonaris.frontend.managers.edux1002a import EDUX1002AManager
 from sonaris.frontend.managers.state_manager import StateManager
-from sonaris import factory
 from sonaris.frontend.pages.general import GeneralPage
 from sonaris.frontend.pages.monitor import MonitorPage
 from sonaris.frontend.pages.scheduler import SchedulerPage
@@ -40,9 +40,11 @@ from sonaris.frontend.widgets.templates import ModularMainWindow
 from sonaris.scheduler import registry
 from sonaris.scheduler.timekeeper import Timekeeper
 from sonaris.scheduler.worker import Worker
-from sonaris.utils.log import get_logger
-from sonaris.services.grafana import GrafanaContainerService
 from sonaris.services.datasource import DataSourceService
+from sonaris.services.grafana import GrafanaService
+from sonaris.utils.container import client, network
+from sonaris.utils.log import get_logger
+
 logger = get_logger()
 
 # Before creating your application instance
@@ -54,10 +56,11 @@ logger.info(f"Using {TIMEKEEPER_JOBS_FILE} as persistence file.")
 logger.info(f"Using {OSCILLOSCOPE_BUFFER_SIZE} oscilloscope buffer size.")
 logger.info(f"Device events under {MONITOR_FILE}.")
 
+
 def signal_handler(signum, frame):
     logger.info("Exit signal detected.")
     QApplication.quit()
-    factory.grafana_container_service.stop()
+    factory.grafana_service.stop()
     factory.data_source_service.stop()
     factory.worker.stop_worker()
     # Invoke the default SIGINT handler to exit the application
@@ -66,7 +69,7 @@ def signal_handler(signum, frame):
 
 
 def init_objects(args_dict: dict):
-    #================= Hardware Managers===================#
+    # ================= Hardware Managers===================#
     factory.resource_manager = pyvisa.ResourceManager()
     factory.state_manager = StateManager()
     factory.edux1002a_manager = EDUX1002AManager(
@@ -90,24 +93,25 @@ def init_objects(args_dict: dict):
         logger=logger,
     )
 
-    #================= Register Tasks ===================#
+    # ================= Register Tasks ===================#
     for task_name, func_pointer in get_tasks(flatten=True).items():
         factory.worker.register_task(func_pointer, task_name)
-    #==================== Services ======================#
+    # ==================== Services ======================#
     if args_dict["grafana"]:
-        factory.grafana_container_service = GrafanaContainerService(
-            client=None, # Use default client instance
-            port=None # Use default port
+        factory.grafana_service = GrafanaService(
+            client=client, port=None  # Use default client instance  # Use default port
         )
         factory.data_source_service = DataSourceService(
             timekeeper=factory.timekeeper,
-            port=None, # Use default port
+            port=None,  # Use default port
             logger=logger,
-            name=f"{APP_NAME}DataSource" # Customize as needed
-            )
-        factory.data_source_service.write_provisioning_files(dashboards_dir=GF_DASHBOARDS_DIR, datasources_dir=GF_DATASOURCES_DIR)
+            name=f"{APP_NAME}DataSource",  # Customize as needed
+        )
+        factory.data_source_service.write_provisioning_files(
+            dashboards_dir=GF_DASHBOARDS_DIR, datasources_dir=GF_DATASOURCES_DIR
+        )
         factory.data_source_service.start()
-        factory.grafana_container_service.start()
+        factory.grafana_service.start()
     factory.worker.start_worker()
 
 
