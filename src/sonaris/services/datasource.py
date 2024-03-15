@@ -344,11 +344,16 @@ class DataSourceService(Service):
             )  # This should return a dict or list of jobs
             formatted_jobs = [
                 {
+                    "id": job_id,
                     "timestamp": datetime.strptime(
                         job["created"], "%Y-%m-%dT%H:%M:%S.%f"
                     ).isoformat(),
                     "task": job["task"],
                     "result": job["result"],
+                    "kwargs": job["kwargs"],
+                    "schedule_time": datetime.strptime(
+                        job["schedule_time"], "%Y-%m-%dT%H:%M:%S.%f"
+                    ),
                 }
                 for job_id, job in jobs_data.items()
             ]
@@ -362,11 +367,16 @@ class DataSourceService(Service):
             )  # This should return a dict or list of archived jobs
             formatted_archive = [
                 {
+                    "id": archive_id,
                     "timestamp": datetime.strptime(
                         archive["created"], "%Y-%m-%dT%H:%M:%S.%f"
                     ).isoformat(),
                     "task": archive["task"],
                     "result": archive["result"],
+                    "kwargs": archive["kwargs"],
+                    "schedule_time": datetime.strptime(
+                        archive["schedule_time"], "%Y-%m-%dT%H:%M:%S.%f"
+                    ),
                 }
                 for archive_id, archive in archive_data.items()
             ]

@@ -23,4 +23,4 @@ timekeeper: Timekeeper = None
 # ======================Services========================== #
 # ======================================================== #
 grafana_service: GrafanaService = None
-data_source_service: DataSourceService = None
+datasource_service: DataSourceService = None

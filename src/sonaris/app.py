@@ -61,7 +61,7 @@ def signal_handler(signum, frame):
     logger.info("Exit signal detected.")
     QApplication.quit()
     factory.grafana_service.stop()
-    factory.data_source_service.stop()
+    factory.datasource_service.stop()
     factory.worker.stop_worker()
     # Invoke the default SIGINT handler to exit the application
     signal.signal(signum, signal.SIG_DFL)
@@ -101,16 +101,16 @@ def init_objects(args_dict: dict):
         factory.grafana_service = GrafanaService(
             client=client, port=None  # Use default client instance  # Use default port
         )
-        factory.data_source_service = DataSourceService(
+        factory.datasource_service = DataSourceService(
             timekeeper=factory.timekeeper,
             port=None,  # Use default port
             logger=logger,
             name=f"{APP_NAME}DataSource",  # Customize as needed
         )
-        factory.data_source_service.write_provisioning_files(
+        factory.datasource_service.write_provisioning_files(
             dashboards_dir=GF_DASHBOARDS_DIR, datasources_dir=GF_DATASOURCES_DIR
         )
-        factory.data_source_service.start()
+        factory.datasource_service.start()
         factory.grafana_service.start()
     factory.worker.start_worker()
 
