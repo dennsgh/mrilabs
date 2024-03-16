@@ -9,7 +9,7 @@
 
 Sonaris is a hardware device control platform developed to control lab devices and provide basic scheduling and monitoring utilities in a lab setting.
 
-The device hardware written for it are at the moment quite limited and support only DG4202 Signal Generator and the EDUX1002A Oscilloscope, written to facilitate a thesis project.
+The device hardware written are at the moment quite limited and support only DG4202 Signal Generator and the EDUX1002A Oscilloscope, written to facilitate a thesis project.
 
 ## Dependencies
 
@@ -32,7 +32,7 @@ To setup dependencies on the terminal:
 poetry install --no-root
 poetry shell
 # Running the app
-python -m sonaris run --hardware-mock
+python -m sonaris run --hardware-mock --grafana
 ```
 
 The generated .env file will look as such:
@@ -59,7 +59,7 @@ Options:
 
 ## Installing and Running Sonaris
 
-A stable distribution of the Sonaris
+A stable distribution of Sonaris
 ```
 pip install sonaris
 ```
