@@ -10,8 +10,7 @@ from fastapi import FastAPI
 from sonaris.defaults import (
     DATA_SOURCE_NAME,
     DATA_SOURCE_PORT,
-    GF_DASHBOARDS_DIR,
-    GF_DATASOURCES_DIR,
+    GF_PROVISIONING_DIR,
 )
 from sonaris.scheduler.timekeeper import Timekeeper
 from sonaris.services.service import MultithreadedServer, Service
@@ -309,13 +308,32 @@ class DataSourceService(Service):
             "version": 4,
             "weekStart": "",
         }
+    @staticmethod
+    def dashboard_config():
+        return {{
+            "apiVersion":
+            1,
+            "providers": [{
+                "name": "dashboards",
+                "orgId": 1,
+                "folderUid": "",
+                "type": "file",
+                "disableDeletion": True,
+                "updateIntervalSeconds": 15,
+                "allowUiUpdates": False,
+                "options": {
+                    "path": "/etc/grafana/provisioning/dashboards",
+                    "foldersFromFilesStructure": True,
+                },
+            }],
+        }}
 
     def write_provisioning_files(
-        self, datasources_dir: Path = None, dashboards_dir: Path = None
+        self, provisioning_dir: str
     ):
         # Ensure directories exist
-        datasources_dir = datasources_dir or GF_DATASOURCES_DIR
-        dashboards_dir = dashboards_dir or GF_DASHBOARDS_DIR
+        datasources_dir = Path (provisioning_dir or GF_PROVISIONING_DIR ) / "datasources"
+        dashboards_dir = Path(dashboards_dir or GF_PROVISIONING_DIR ) / "dashboards"
 
         datasources_dir.mkdir(parents=True, exist_ok=True)
         dashboards_dir.mkdir(parents=True, exist_ok=True)
@@ -330,6 +348,10 @@ class DataSourceService(Service):
         dashboard_path = dashboards_dir / f"{self.name}.json"
         with open(dashboard_path, "w") as file:
             json.dump(dashboard_manifest, file)
+
+        dashboard_provisioning_path = dashboards_dir / "config.yml"
+        with open(dashboard_provisioning_path, "w") as file:
+            yaml.dump(self.dashboard_config(), file)
 
         # Log or handle the fact that files are written
         logger.info(f"Datasource files written: {data_source_path}")

@@ -18,8 +18,7 @@ from sonaris import factory
 from sonaris.defaults import (
     APP_NAME,
     DEFAULT_DATADIR,
-    GF_DASHBOARDS_DIR,
-    GF_DATASOURCES_DIR,
+    GF_PROVISIONING_DIR,
     MONITOR_FILE,
     OSCILLOSCOPE_BUFFER_SIZE,
     TIMEKEEPER_JOBS_FILE,
@@ -108,7 +107,7 @@ def init_objects(args_dict: dict):
             name=f"{APP_NAME}DataSource",  # Customize as needed
         )
         factory.datasource_service.write_provisioning_files(
-            dashboards_dir=GF_DASHBOARDS_DIR, datasources_dir=GF_DATASOURCES_DIR
+            provisioning_dir=GF_PROVISIONING_DIR,
         )
         factory.datasource_service.start()
         factory.grafana_service.start()

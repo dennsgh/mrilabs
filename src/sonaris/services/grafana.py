@@ -6,9 +6,9 @@ from docker.models.containers import Container
 
 from sonaris.defaults import (
     APP_NAME,
-    GF_DASHBOARDS_DIR,
-    GF_DATASOURCES_DIR,
+    GF_PROVISIONING_DIR,
     GF_PORT,
+    GF_SECURITY_ADMIN_USER,
     GF_SECURITY_ADMIN_PASSWORD,
     SONARIS_NETWORK_NAME,
 )
@@ -26,8 +26,7 @@ class GrafanaService(ContainerService):
         client: DockerClient = None,
         port: int = None,
         image: str = None,
-        datasources_dir: Path = None,
-        dashboards_dir: Path = None,
+        provisioning_dir: Path = None,
         network_name: str = None,
         plugins: str = None,
     ):
@@ -39,8 +38,7 @@ class GrafanaService(ContainerService):
         )
         self.plugins = plugins or GF_INSTALL_PLUGINS
         self.port = port or GF_PORT
-        self.datasources_dir = datasources_dir or GF_DATASOURCES_DIR
-        self.dashboards_dir = dashboards_dir or GF_DASHBOARDS_DIR
+        self.provisioning_dir = provisioning_dir or GF_PROVISIONING_DIR
 
     def create_container(self, image: str = "grafana/grafana") -> Optional[str]:
         if self.client is None:
@@ -51,18 +49,15 @@ class GrafanaService(ContainerService):
                 image,
                 ports={"3000/tcp": self.port},
                 environment={
+                    "GF_SECURITY_ADMIN_USER": f"{GF_SECURITY_ADMIN_USER}",
                     "GF_SECURITY_ADMIN_PASSWORD": f"{GF_SECURITY_ADMIN_PASSWORD}",
                     "GF_INSTALL_PLUGINS": self.plugins,
                 },
                 volumes={
-                    str(self.datasources_dir): {
-                        "bind": "/etc/grafana/provisioning/datasources",
+                    str(self.provisioning_dir): {
+                        "bind": "/etc/grafana/provisioning",
                         "mode": "rw",
-                    },
-                    str(self.dashboards_dir): {
-                        "bind": "/etc/grafana/provisioning/dashboards",
-                        "mode": "rw",
-                    },
+                    }
                 },
                 labels={f"grafana": self._container_label},
                 detach=True,
@@ -70,7 +65,7 @@ class GrafanaService(ContainerService):
             if self.network:
                 self.network.connect(container)
             logger.info(
-                f"Grafana container created and started. Accessible on http://localhost:{self.port}."
+                f"Grafana container created and started. Accessible on http://localhost:{self.port}. (http://host.docker.internal:{self.port} on docker network)"
             )
             return container.id
         except Exception as e:

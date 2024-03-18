@@ -67,6 +67,7 @@ DELAY_KEYWORD = "delay"
 # GRAFANA DEFAULTS
 DEFAULT_TAB_STYLE = {"height": "30px", "padding": "2px"}
 GF_SECURITY_ADMIN_PASSWORD = os.getenv("GF_SECURITY_ADMIN_PASSWORD", "admin")
+GF_SECURITY_ADMIN_USER = os.getenv("GF_SECURITY_ADMIN_USER","admin")
 GF_PORT = int(os.getenv("GF_PORT", "3000"))
 # sonaris.defaults.py
 GF_INSTALL_PLUGINS = "grafana-simple-json-datasource,yesoreyeram-infinity-datasource"
@@ -75,8 +76,7 @@ GF_INSTALL_PLUGINS = "grafana-simple-json-datasource,yesoreyeram-infinity-dataso
 DATA_SOURCE_PORT = int(os.getenv("DATA_SOURCE_PORT", "5000"))
 DATA_SOURCE_NAME = str(os.getenv("DATA_SOURCE_NAME", f"{APP_NAME}DataSource"))
 
-GF_DATASOURCES_DIR = DEFAULT_DATADIR / "provisioning" / "datasources"
-GF_DASHBOARDS_DIR = DEFAULT_DATADIR / "provisioning" / "dashboards"
+GF_PROVISIONING_DIR = DEFAULT_DATADIR / "provisioning"
 
 SONARIS_NETWORK_NAME = f"{APP_NAME.lower()}_network"
 # GRAFANA DEFAULTS
