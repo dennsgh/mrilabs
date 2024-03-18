@@ -357,52 +357,73 @@ class DataSourceService(Service):
         logger.info(f"Datasource files written: {data_source_path}")
         logger.info(f"Dashboard files written: {dashboard_path}")
 
+
     def setup_routes(self):
+
         @self.app.get("/jobs")
         async def get_jobs():
-            # Fetch and format jobs data
-            jobs_data = (
-                self.timekeeper.get_jobs()
-            )  # This should return a dict or list of jobs
+            # Fetch jobs data
+            jobs_data = self.timekeeper.get_jobs()  # This returns a dict of jobs
+
+            # Check if jobs_data is empty and return a message if true
+            if not jobs_data:
+                return [{"task": "No tasks found"}]
+
+            # Otherwise, format and return jobs data
             formatted_jobs = [
                 {
-                    "id": job_id,
-                    "timestamp": datetime.strptime(
-                        job["created"], "%Y-%m-%dT%H:%M:%S.%f"
-                    ).isoformat(),
-                    "task": job["task"],
-                    "result": job["result"],
-                    "kwargs": job["kwargs"],
-                    "schedule_time": datetime.strptime(
-                        job["schedule_time"], "%Y-%m-%dT%H:%M:%S.%f"
-                    ),
-                }
-                for job_id, job in jobs_data.items()
+                    "id":
+                    job_id,
+                    "timestamp":
+                    datetime.strptime(job["created"],
+                                    "%Y-%m-%dT%H:%M:%S.%f").isoformat(),
+                    "task":
+                    job["task"],
+                    "result":
+                    job.get(
+                        "result",
+                        "Pending"),  # Default to "Pending" if result is not set
+                    "kwargs":
+                    job["kwargs"],
+                    "schedule_time":
+                    datetime.strptime(job["schedule_time"],
+                                    "%Y-%m-%dT%H:%M:%S.%f"),
+                } for job_id, job in jobs_data.items()
             ]
             return formatted_jobs
 
         @self.app.get("/archive")
         async def get_archive():
-            # Fetch and format archive data similarly
-            archive_data = (
-                self.timekeeper.get_archive()
-            )  # This should return a dict or list of archived jobs
+            # Fetch archive data
+            archive_data = self.timekeeper.get_archive(
+            )  # This returns a dict of archived jobs
+
+            # Check if archive_data is empty and return a message if true
+            if not archive_data:
+                return [{"task": "No tasks found"}]
+
+            # Otherwise, format and return archive data
             formatted_archive = [
                 {
-                    "id": archive_id,
-                    "timestamp": datetime.strptime(
-                        archive["created"], "%Y-%m-%dT%H:%M:%S.%f"
-                    ).isoformat(),
-                    "task": archive["task"],
-                    "result": archive["result"],
-                    "kwargs": archive["kwargs"],
-                    "schedule_time": datetime.strptime(
-                        archive["schedule_time"], "%Y-%m-%dT%H:%M:%S.%f"
-                    ),
-                }
-                for archive_id, archive in archive_data.items()
+                    "id":
+                    archive_id,
+                    "timestamp":
+                    datetime.strptime(archive["created"],
+                                    "%Y-%m-%dT%H:%M:%S.%f").isoformat(),
+                    "task":
+                    archive["task"],
+                    "result":
+                    archive.get("result", "Completed"
+                                ),  # Default to "Completed" if result is not set
+                    "kwargs":
+                    archive["kwargs"],
+                    "schedule_time":
+                    datetime.strptime(archive["schedule_time"],
+                                    "%Y-%m-%dT%H:%M:%S.%f"),
+                } for archive_id, archive in archive_data.items()
             ]
             return formatted_archive
+
 
     def start(self):
         self.logger.info("Starting DataSourceService...")
