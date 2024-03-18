@@ -333,7 +333,7 @@ class DataSourceService(Service):
     ):
         # Ensure directories exist
         datasources_dir = Path (provisioning_dir or GF_PROVISIONING_DIR ) / "datasources"
-        dashboards_dir = Path(dashboards_dir or GF_PROVISIONING_DIR ) / "dashboards"
+        dashboards_dir = Path(provisioning_dir or GF_PROVISIONING_DIR ) / "dashboards"
 
         datasources_dir.mkdir(parents=True, exist_ok=True)
         dashboards_dir.mkdir(parents=True, exist_ok=True)
