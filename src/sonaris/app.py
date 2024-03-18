@@ -13,7 +13,7 @@ import qdarktheme
 from PyQt6.QtCore import QLocale
 from PyQt6.QtGui import QGuiApplication, QIcon
 from PyQt6.QtWidgets import QApplication, QStackedWidget, QWidget
-
+import sys
 from sonaris import factory
 from sonaris.defaults import (
     APP_NAME,
@@ -58,14 +58,17 @@ logger.info(f"Device events under {MONITOR_FILE}.")
 
 def signal_handler(signum, frame):
     logger.info("Exit signal detected.")
-    QApplication.quit()
-    factory.grafana_service.stop()
-    factory.datasource_service.stop()
-    factory.worker.stop_worker()
-    # Invoke the default SIGINT handler to exit the application
-    signal.signal(signum, signal.SIG_DFL)
-    os.kill(os.getpid(), signum)
+    shutdown()
+    sys.exit(0)
 
+def shutdown():
+    logger.info("Shutting down application...")
+    QApplication.quit()
+    if factory.grafana_service:
+        factory.grafana_service.stop()
+    if factory.datasource_service:
+        factory.datasource_service.stop()
+    factory.worker.stop_worker()
 
 def init_objects(args_dict: dict):
     # ================= Hardware Managers===================#
@@ -189,7 +192,8 @@ class MainWindow(ModularMainWindow):
 
     def closeEvent(self, event):
         logger.info("main x exit button was clicked")
-        factory.worker.stop_worker()
+        shutdown()
+        event.accept()
         super().closeEvent(event)
 
     def showEvent(self, event):
