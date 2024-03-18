@@ -310,7 +310,7 @@ class DataSourceService(Service):
         }
     @staticmethod
     def dashboard_config():
-        return {{
+        return {
             "apiVersion":
             1,
             "providers": [{
@@ -326,7 +326,7 @@ class DataSourceService(Service):
                     "foldersFromFilesStructure": True,
                 },
             }],
-        }}
+        }
 
     def write_provisioning_files(
         self, provisioning_dir: str
