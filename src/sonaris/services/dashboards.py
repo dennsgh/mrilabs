@@ -57,381 +57,379 @@ DS_SONARIS_DATASOURCE = lambda host, port:{
             ],
         }
 
-TASK_DASHBOARD = {
-    "annotations": {
-        "list": [{
-            "builtIn": 1,
-            "datasource": {
-                "type": "grafana",
-                "uid": "-- Grafana --"
-            },
-            "enable": "true",
-            "hide": "true",
-            "iconColor": "rgba(0, 211, 255, 1)",
-            "name": "Annotations & Alerts",
-            "type": "dashboard"
-        }]
-    },
-    "editable":
-    "true",
-    "fiscalYearStartMonth":
-    0,
-    "graphTooltip":
-    0,
-    "id":
-    1,
-    "links": [],
-    "panels": [{
+TASK_DASHBOARD = """
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
         "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": "true",
+        "hide": "true",
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 1,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "P3E0B65AA66943F6C"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": "false"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 5,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": "false",
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": "false"
+        },
+        "showHeader": "true"
+      },
+      "pluginVersion": "10.4.0",
+      "targets": [
+        {
+          "columns": [],
+          "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "P3E0B65AA66943F6C"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "archive",
+          "refId": "A",
+          "root_selector": "",
+          "source": "url",
+          "type": "json",
+          "url": "http://host.docker.internal:5000/jobs",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Scheduled Tasks",
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "format": "kvp",
+            "keepTime": "false",
+            "replace": "false",
+            "source": "kwargs"
+          }
         },
-        "fieldConfig": {
-            "defaults": {
-                "color": {
-                    "mode": "thresholds"
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                "destinationType": "time",
+                "targetField": "schedule_time"
+              },
+              {
+                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                "destinationType": "time",
+                "targetField": "timestamp"
+              },
+              {
+                "destinationType": "enum",
+                "enumConfig": {
+                  "text": [
+                    "Pending"
+                  ]
                 },
-                "custom": {
-                    "align": "auto",
-                    "cellOptions": {
-                        "type": "auto"
-                    },
-                    "inspect": "false"
-                },
-                "mappings": [],
-                "thresholds": {
-                    "mode":
-                    "absolute",
-                    "steps": [{
-                        "color": "green",
-                        "value": None
-                    }, {
-                        "color": "red",
-                        "value": 80
-                    }]
-                }
+                "targetField": "result"
+              }
+            ],
+            "fields": {}
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "P3E0B65AA66943F6C"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": "false",
+            "axisCenteredZero": "false",
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": "false",
+              "tooltip": "false",
+              "viz": "false"
             },
-            "overrides": []
-        },
-        "gridPos": {
-            "h": 7,
-            "w": 24,
-            "x": 0,
-            "y": 0
-        },
-        "id":
-        5,
-        "options": {
-            "cellHeight": "sm",
-            "footer": {
-                "countRows": "false",
-                "fields": "",
-                "reducer": ["sum"],
-                "show": "false"
+            "insertNulls": "false",
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
             },
-            "showHeader": "true"
-        },
-        "pluginVersion":
-        "10.4.0",
-        "targets": [{
-            "columns": [],
-            "datasource": {
-                "type": "yesoreyeram-infinity-datasource",
-                "uid": "P3E0B65AA66943F6C"
+            "showPoints": "auto",
+            "spanNulls": "false",
+            "stacking": {
+              "group": "A",
+              "mode": "none"
             },
-            "filters": [],
-            "format": "table",
-            "global_query_id": "archive",
-            "refId": "A",
-            "root_selector": "",
-            "source": "url",
-            "type": "json",
-            "url": "http://host.docker.internal:5000/jobs",
-            "url_options": {
-                "data": "",
-                "method": "GET"
+            "thresholdsStyle": {
+              "mode": "off"
             }
-        }],
-        "title":
-        "Scheduled Tasks",
-        "transformations": [{
-            "id": "extractFields",
-            "options": {
-                "format": "kvp",
-                "keepTime": "false",
-                "replace": "false",
-                "source": "kwargs"
-            }
-        }, {
-            "id": "convertFieldType",
-            "options": {
-                "conversions": [{
-                    "dateFormat": "YYYY-MM-DD HH:mm:ss",
-                    "destinationType": "time",
-                    "targetField": "schedule_time"
-                }, {
-                    "dateFormat": "YYYY-MM-DD HH:mm:ss",
-                    "destinationType": "time",
-                    "targetField": "timestamp"
-                }, {
-                    "destinationType": "enum",
-                    "enumConfig": {
-                        "text": ["Pending"]
-                    },
-                    "targetField": "result"
-                }],
-                "fields": {}
-            }
-        }],
-        "type":
-        "table"
-    }, {
-        "collapsed": "false",
-        "gridPos": {
-            "h": 1,
-            "w": 24,
-            "x": 0,
-            "y": 7
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
         },
-        "id": 4,
-        "panels": [],
-        "title": "Current Jobs",
-        "type": "row"
-    }, {
-        "collapsed": "false",
-        "gridPos": {
-            "h": 1,
-            "w": 24,
-            "x": 0,
-            "y": 8
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": "true"
         },
-        "id": 3,
-        "panels": [],
-        "title": "Archive",
-        "type": "row"
-    }, {
-        "datasource": {
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "columns": [],
+          "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "P3E0B65AA66943F6C"
-        },
-        "fieldConfig": {
-            "defaults": {
-                "color": {
-                    "mode": "palette-classic"
-                },
-                "custom": {
-                    "axisBorderShow": "false",
-                    "axisCenteredZero": "false",
-                    "axisColorMode": "text",
-                    "axisLabel": "",
-                    "axisPlacement": "auto",
-                    "barAlignment": 0,
-                    "drawStyle": "line",
-                    "fillOpacity": 0,
-                    "gradientMode": "none",
-                    "hideFrom": {
-                        "legend": "false",
-                        "tooltip": "false",
-                        "viz": "false"
-                    },
-                    "insertNulls": "false",
-                    "lineInterpolation": "linear",
-                    "lineWidth": 1,
-                    "pointSize": 5,
-                    "scaleDistribution": {
-                        "type": "linear"
-                    },
-                    "showPoints": "auto",
-                    "spanNulls": "false",
-                    "stacking": {
-                        "group": "A",
-                        "mode": "none"
-                    },
-                    "thresholdsStyle": {
-                        "mode": "off"
-                    }
-                },
-                "mappings": [],
-                "thresholds": {
-                    "mode":
-                    "absolute",
-                    "steps": [{
-                        "color": "green",
-                        "value": None
-                    }, {
-                        "color": "red",
-                        "value": 80
-                    }]
-                }
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "refId": "A",
+          "root_selector": "",
+          "source": "url",
+          "type": "json",
+          "url": "http://host.docker.internal:5000/archive",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Task Result Status",
+      "transformations": [
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                "destinationType": "time",
+                "targetField": "timestamp"
+              },
+              {
+                "destinationType": "boolean",
+                "targetField": "result"
+              }
+            ],
+            "fields": {}
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "P3E0B65AA66943F6C"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
             },
-            "overrides": []
+            "inspect": "false"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
         },
-        "gridPos": {
-            "h": 7,
-            "w": 24,
-            "x": 0,
-            "y": 9
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 20,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "id": 1,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": "false",
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": "false"
         },
-        "id":
-        2,
-        "options": {
-            "legend": {
-                "calcs": [],
-                "displayMode": "list",
-                "placement": "bottom",
-                "showLegend": "true"
-            },
-            "tooltip": {
-                "mode": "single",
-                "sort": "none"
-            }
-        },
-        "targets": [{
-            "columns": [],
-            "datasource": {
-                "type": "yesoreyeram-infinity-datasource",
-                "uid": "P3E0B65AA66943F6C"
-            },
-            "filters": [],
-            "format": "table",
-            "global_query_id": "",
-            "refId": "A",
-            "root_selector": "",
-            "source": "url",
-            "type": "json",
-            "url": "http://host.docker.internal:5000/archive",
-            "url_options": {
-                "data": "",
-                "method": "GET"
-            }
-        }],
-        "title":
-        "Task Result Status",
-        "transformations": [{
-            "id": "convertFieldType",
-            "options": {
-                "conversions": [{
-                    "dateFormat": "YYYY-MM-DD HH:mm:ss",
-                    "destinationType": "time",
-                    "targetField": "timestamp"
-                }, {
-                    "destinationType": "boolean",
-                    "targetField": "result"
-                }],
-                "fields": {}
-            }
-        }],
-        "type":
-        "timeseries"
-    }, {
-        "datasource": {
+        "showHeader": "true"
+      },
+      "pluginVersion": "10.4.0",
+      "targets": [
+        {
+          "columns": [],
+          "datasource": {
             "type": "yesoreyeram-infinity-datasource",
             "uid": "P3E0B65AA66943F6C"
-        },
-        "fieldConfig": {
-            "defaults": {
-                "color": {
-                    "mode": "thresholds"
-                },
-                "custom": {
-                    "align": "auto",
-                    "cellOptions": {
-                        "type": "auto"
-                    },
-                    "inspect": "false"
-                },
-                "mappings": [],
-                "thresholds": {
-                    "mode":
-                    "absolute",
-                    "steps": [{
-                        "color": "green",
-                        "value": None
-                    }, {
-                        "color": "red",
-                        "value": 80
-                    }]
-                }
-            },
-            "overrides": []
-        },
-        "gridPos": {
-            "h": 20,
-            "w": 24,
-            "x": 0,
-            "y": 16
-        },
-        "id":
-        1,
-        "options": {
-            "cellHeight": "sm",
-            "footer": {
-                "countRows": "false",
-                "fields": "",
-                "reducer": ["sum"],
-                "show": "false"
-            },
-            "showHeader": "true"
-        },
-        "pluginVersion":
-        "10.4.0",
-        "targets": [{
-            "columns": [],
-            "datasource": {
-                "type": "yesoreyeram-infinity-datasource",
-                "uid": "P3E0B65AA66943F6C"
-            },
-            "filters": [],
-            "format": "table",
-            "global_query_id": "",
-            "refId": "A",
-            "root_selector": "",
-            "source": "url",
-            "type": "json",
-            "url": "http://host.docker.internal:5000/archive",
-            "url_options": {
-                "data": "",
-                "method": "GET"
-            }
-        }],
-        "title":
-        "Panel Title",
-        "transformations": [{
-            "id": "convertFieldType",
-            "options": {
-                "conversions": [{
-                    "dateFormat": "YYYY-MM-DD HH:mm:ss",
-                    "destinationType": "time",
-                    "targetField": "timestamp"
-                }, {
-                    "destinationType": "boolean",
-                    "targetField": "result"
-                }],
-                "fields": {}
-            }
-        }],
-        "type":
-        "table"
-    }],
-    "schemaVersion":
-    39,
-    "tags": [],
-    "templating": {
-        "list": []
-    },
-    "time": {
-        "from": "now-6h",
-        "to": "now"
-    },
-    "timepicker": {},
-    "timezone":
-    "browser",
-    "title":
-    "Task Table",
-    "uid":
-    "cdfqcy57u0gzkd",
-    "version":
-    1,
-    "weekStart":
-    ""
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "refId": "A",
+          "root_selector": "",
+          "source": "url",
+          "type": "json",
+          "url": "http://host.docker.internal:5000/archive",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Panel Title",
+      "transformations": [
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                "destinationType": "time",
+                "targetField": "timestamp"
+              },
+              {
+                "destinationType": "boolean",
+                "targetField": "result"
+              }
+            ],
+            "fields": {}
+          }
+        }
+      ],
+      "type": "table"
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Task Table",
+  "uid": "cdfqcy57u0gzkd",
+  "version": 1,
+  "weekStart": ""
 }
+"""

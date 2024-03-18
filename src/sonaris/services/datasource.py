@@ -3,7 +3,7 @@ from datetime import datetime
 from logging import Logger
 from pathlib import Path
 from typing import Optional
-
+import traceback
 import yaml
 from fastapi import FastAPI
 
@@ -51,7 +51,14 @@ class DataSourceService(Service):
     @staticmethod
     def get_dashboard_manifest(
         host="http://host.docker.internal", port=DATA_SOURCE_PORT, name=DATA_SOURCE_NAME
-    ): return TASK_DASHBOARD
+
+    ):
+        try:
+            return json.loads(TASK_DASHBOARD)
+        except Exception as e:
+            logger.error(f"Error loading TASK_DASHBOARD: {e}")
+            logger.error(f"{traceback.format_exc()}")
+            return {}
     @staticmethod
     def dashboard_config():
         return {
